@@ -1,98 +1,168 @@
+/* Monospaced publication rhythm, with quiet rules and color-led links. */
+body {
+  font-size: 16px;
+  line-height: 1.65;
+}
 .page-shell,
 .site-header {
-  max-width: 960px;
+  max-width: 768px;
 }
 .site-header {
-  min-height: 104px;
+  min-height: 88px;
   gap: var(--space-3);
-  border-bottom: 1px dashed var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.site-header nav,
+.header-actions {
+  font-size: 14px;
 }
 .home-grid,
 .simple-page {
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
-  padding-block: var(--space-4);
+  padding-block: var(--space-5) var(--space-4);
+  min-height: 0;
 }
 .intro-rail {
   position: static;
   padding-bottom: var(--space-4);
-  border-bottom: 1px dashed var(--line);
+  border-bottom: 1px solid var(--line);
 }
 .intro-rail h1,
 .simple-page h1 {
-  font: 600 clamp(30px, 4vw, 44px) / 1.2 var(--font-mono);
-  letter-spacing: -0.045em;
-  margin-block: var(--space-2);
+  font: 700 clamp(36px, 5vw, 48px) / 1.15 var(--font-mono);
+  letter-spacing: -0.035em;
+  margin-block: var(--space-2) var(--space-3);
 }
 .intro-rail > p:not(.eyebrow) {
-  max-width: 60ch;
+  max-width: none;
 }
 .intro-rail .micro {
   margin-top: var(--space-3);
 }
+.eyebrow {
+  text-transform: none;
+  letter-spacing: normal;
+}
 .categories {
   border-bottom: 0;
+  font-size: 14px;
+  padding-bottom: var(--space-1);
 }
 .categories a,
 .pagination a,
-.post-row h2 {
+.post-row h2,
+.prose a {
   color: var(--accent);
 }
 .post-row {
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-1) var(--space-3);
-  border-bottom: 1px dashed var(--line);
+  gap: 4px var(--space-2);
+  border-bottom: 0;
+  padding-block: var(--space-3);
+}
+.post-row > div {
+  display: contents;
+}
+.post-row h2 {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  font: 600 18px/1.55 var(--font-mono);
+  letter-spacing: normal;
 }
 .post-row time {
   grid-column: 1 / -1;
+  grid-row: 2;
+  font-size: 13px;
+  padding-top: 0;
 }
-.post-row h2 {
-  font: 600 21px/1.45 var(--font-mono);
-  letter-spacing: -0.025em;
+.post-row p {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  font-size: 16px;
+  margin-block: 0 var(--space-1);
+}
+.post-row .eyebrow,
+.post-duration {
+  grid-row: 4;
+  font-size: 12px;
+  padding-top: 0;
 }
 .post-row:hover h2 {
   text-decoration: underline;
-  text-underline-offset: 4px;
-}
-.post-row p {
-  font-size: 15px;
-  max-width: 70ch;
+  text-decoration-style: dashed;
+  text-underline-offset: 5px;
 }
 .article-hero {
   margin-left: 0;
   padding-block: var(--space-4);
 }
 .article-hero h1 {
-  font-family: var(--font-mono);
-  font-size: clamp(28px, 4vw, 44px);
-  letter-spacing: -0.04em;
+  font-size: clamp(30px, 4vw, 40px);
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+  color: var(--accent);
+}
+.standfirst {
+  font-size: 18px;
+}
+.article-meta {
+  margin-top: var(--space-3);
+  font-size: 13px;
 }
 .article-body-grid {
-  grid-template-columns: 150px minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: var(--space-4);
-  border-top-style: dashed;
   padding-top: var(--space-4);
+}
+.article-rail {
+  position: static;
+  max-height: none;
+  order: 0;
+  width: 100%;
+  border-bottom: 1px solid var(--line);
+  padding-block: var(--space-2);
+  font-size: 14px;
 }
 .article-neighbors,
 .related-section {
-  margin-left: calc(150px + var(--space-4));
+  margin-left: 0;
 }
-.prose h2,
+.prose h2 {
+  font-size: 24px;
+}
 .prose h3,
-.prose h4,
-.footer-wordmark {
-  font-family: var(--font-mono);
-  letter-spacing: -0.035em;
+.prose h4 {
+  font-size: 20px;
+}
+.prose blockquote {
+  font-size: 18px;
+}
+.prose a {
+  text-decoration-style: dashed;
+  text-underline-offset: 5px;
 }
 .site-footer {
-  border-top-style: dashed;
+  font-size: 13px;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.footer-wordmark {
+  font-size: 20px;
 }
 @media (max-width: 760px) {
-  .article-neighbors,
-  .related-section {
-    margin-left: 0;
+  .home-grid,
+  .simple-page {
+    padding-top: var(--space-4);
   }
-  .post-row h2 {
-    font-size: 19px;
+  .site-header nav {
+    justify-content: start;
   }
+}
+
+.article-rail .share-actions {
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
 }

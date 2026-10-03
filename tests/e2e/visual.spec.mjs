@@ -18,6 +18,11 @@ for (const [design, port] of [
         ]) {
           await page.goto(`http://127.0.0.1:${port}/${path === "./" ? "" : path}`);
           await page.evaluate(() => document.fonts.ready);
+          for (const image of await page.locator('img[loading="lazy"]').all()) {
+            await image.scrollIntoViewIfNeeded();
+            await image.evaluate((element) => element.decode());
+          }
+          await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
           await expect(page).toHaveScreenshot(
             `${design === "editorial" ? "" : `${design}-`}${size}-${theme}-${name}.png`,
             { fullPage: true },

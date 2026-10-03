@@ -1,18 +1,18 @@
 :root {
-  --font-sans: "Inter Variable", sans-serif;
+  --font-sans: "IBM Plex Mono", ui-monospace, monospace;
   --font-mono: "IBM Plex Mono", monospace;
-  --bg: #f8faf9;
-  --raised: #eaf0ed;
-  --ink: #213a32;
-  --body: #3e514a;
-  --muted: #506259;
-  --line: #213a3225;
-  --accent: #176249;
-  --selection: #4aa48235;
+  --bg: #fdfdfd;
+  --raised: #f0f1f3;
+  --ink: #282728;
+  --body: #343334;
+  --muted: #60616b;
+  --line: #28272825;
+  --accent: #006cac;
+  --selection: #006cac25;
   --overlay: #0005;
   --shadow: 0 24px 80px #0004;
-  --gutter: clamp(20px, 4vw, 32px);
-  --reading-width: 680px;
+  --gutter: 16px;
+  --reading-width: 736px;
   --space-1: 8px;
   --space-2: 16px;
   --space-3: 24px;
@@ -22,24 +22,24 @@
   color-scheme: light;
 }
 :root[data-theme="dark"] {
-  --bg: #10201c;
-  --raised: #1b3029;
-  --ink: #edf5f1;
-  --body: #c5d5cc;
-  --muted: #acbfb3;
-  --line: #edf5f130;
-  --accent: #87d6b3;
+  --bg: #212737;
+  --raised: #2d3548;
+  --ink: #eaedf3;
+  --body: #eaedf3;
+  --muted: #b4bdcf;
+  --line: #ff8a3d55;
+  --accent: #ff8a3d;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #10201c;
-    --raised: #1b3029;
-    --ink: #edf5f1;
-    --body: #c5d5cc;
-    --muted: #acbfb3;
-    --line: #edf5f130;
-    --accent: #87d6b3;
+    --bg: #212737;
+    --raised: #2d3548;
+    --ink: #eaedf3;
+    --body: #eaedf3;
+    --muted: #b4bdcf;
+    --line: #ff8a3d55;
+    --accent: #ff8a3d;
     color-scheme: dark;
   }
 }

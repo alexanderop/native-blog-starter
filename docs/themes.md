@@ -11,13 +11,13 @@ export default {
 
 The starter includes three original designs.
 
-| Theme       | Appearance                                                                    |
-| ----------- | ----------------------------------------------------------------------------- |
-| `editorial` | Spatial grid, warm neutral colors, sticky reading guide. This is the default. |
-| `minimal`   | Serif text, blue links, narrow home column, borderless article list.          |
-| `paper`     | Green accents, monospace headings, dashed rules, compact metadata.            |
+| Theme       | Appearance                                                                       |
+| ----------- | -------------------------------------------------------------------------------- |
+| `editorial` | Spatial grid, warm neutral colors, sticky reading guide. This is the default.    |
+| `minimal`   | Verdana text, blue links, a 720px reading column, borderless article list.       |
+| `paper`     | Monospace text, a 768px shell, blue light links and orange on navy in dark mode. |
 
-The minimal design takes inspiration from [Bear Blog's focus on reading](https://bearblog.dev/). The paper design takes inspiration from [AstroPaper's minimal blog presentation](https://github.com/satnaing/astro-paper). These themes use original CSS and the starter's shared templates. Neither project is installed or imported.
+The minimal design takes inspiration from [Bear Blog's focus on reading](https://bearblog.dev/). The paper design takes inspiration from [AstroPaper's minimal blog presentation](https://github.com/satnaing/astro-paper). These themes use original CSS and the starter's shared templates. Neither project is installed or imported. The visual reference for paper is the [live AstroPaper demo](https://astro-paper.pages.dev/). The minimal design also uses the [Hugo Bear Blog demo](https://janraasch.github.io/hugo-bearblog/) as a rendered reference for the default Bear typography and layout. We retain our own branding, article metadata, navigation, and reading tools; these are adaptations rather than template ports.
 
 The selected design and the reader's color preference are separate settings. Every bundled design supports light, dark, and system modes. The existing color button remembers the reader's preference. Reading, archives, downloads, and system color mode work without JavaScript.
 
