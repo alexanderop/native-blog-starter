@@ -6,7 +6,7 @@ export default defineConfig({
   use: { baseURL: "http://127.0.0.1:5271", ...devices["Desktop Chrome"] },
   webServer: {
     command: "node tests/fixtures/server.mjs",
-    url: "http://127.0.0.1:5271",
+    url: "http://127.0.0.1:5276/people/alex/",
     reuseExistingServer: false,
   },
   workers: 1,

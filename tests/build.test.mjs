@@ -3,9 +3,10 @@ import assert from "node:assert/strict";
 import { readFile, writeFile, rm, cp, symlink } from "node:fs/promises";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
-import { build, projectRoot } from "../scripts/build.mjs";
+import { build, projectRoot } from "../scripts/build.ts";
 import { fixture } from "./fixtures/site.mjs";
-import { readTree, validate } from "../lib/validate.mjs";
+import { validate } from "../src/core/validate.ts";
+import { readTree } from "../src/shell/read-project.ts";
 async function setup(t, options) {
   const f = await fixture(options);
   t.after(() => rm(f.root, { recursive: true, force: true }));
@@ -73,17 +74,21 @@ test("invalid content, failed writes, asset collision and symlinks retain last p
   assert.equal(await readFile(resolve(first.out, "index.html"), "utf8"), before);
   await assert.rejects(build({ root: f.root, out: f.root, env: {} }), /overlaps/);
 });
-test("copied project builds without node_modules or package resolution", async (t) => {
+test("copied TypeScript tooling builds using installed dependencies and publishes only static files", async (t) => {
   const f = await setup(t, { count: 1 });
-  for (const dir of ["lib", "templates", "scripts"])
+  for (const dir of ["src", "scripts"])
     await cp(resolve(projectRoot, dir), resolve(f.root, dir), { recursive: true });
-  const result = spawnSync(process.execPath, ["scripts/build.mjs"], {
+  const result = spawnSync(process.execPath, ["scripts/build.ts"], {
     cwd: f.root,
     encoding: "utf8",
     env: { PATH: process.env.PATH },
   });
   assert.equal(result.status, 0, result.stderr);
   assert.match(await readFile(resolve(f.root, "dist/index.html"), "utf8"), /Fixture Journal/);
+  const files = await readTree(resolve(f.root, "dist"));
+  assert.ok(
+    [...files.keys()].every((path) => !path.includes("node_modules") && !path.endsWith(".ts")),
+  );
 });
 test("reserved routes and configuration errors are actionable", async (t) => {
   const f = await setup(t, { count: 1 });
@@ -140,4 +145,11 @@ test("future publication, featured home placement, chronology and optional artic
   assert.ok(!article.includes("Keep exploring"));
   assert.match(article, /Newer: Fixture note 01/);
   assert.match(article, /Older: Fixture note 02/);
+});
+
+test("build diagnostics preserve the authored filename and line", async (t) => {
+  const f = await setup(t, { count: 1 });
+  const path = resolve(f.root, "content/blog/note-01.md");
+  await writeFile(path, (await readFile(path, "utf8")).replace("2026-09-01", "2026-02-30"));
+  await assert.rejects(build({ root: f.root, env: {} }), /note-01\.md:4: Invalid date/);
 });

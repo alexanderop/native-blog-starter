@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { markdown, inline } from "../lib/markdown.mjs";
-import { parseContent } from "../lib/content.mjs";
-import { safeLink, origin, basePath, publicUrl } from "../lib/urls.mjs";
+import { markdown, inline } from "../src/core/markdown.ts";
+import { parseContent } from "../src/core/content.ts";
+import { safeLink, origin, basePath, publicUrl } from "../src/core/urls.ts";
 test("bounded Markdown produces semantic lists, images, unique headings, tables and escaped code", () => {
   const result = markdown(
     "## Same\n\n## Same\n\n#### Detail\n\n- One\n- Two\n\n1. First\n2. Second\n\n![A view](/media/image.svg)\n\n```js\n<script>literal</script>\n```\n\n> One\n> Two\n\n| A \\| B | C |\n| --- | --- |\n| D | E |",

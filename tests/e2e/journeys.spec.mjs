@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { parseContent } from "../../src/core/content.ts";
 import AxeBuilder from "@axe-core/playwright";
 const article = "blog/note-23/";
 test("keyboard Finder opens, navigates to headings, restores focus, and retries", async ({
@@ -46,7 +47,9 @@ test("theme survives another page and reload; contents, code and downloads work"
   const href = await page.getByRole("link", { name: "Download Markdown" }).getAttribute("href");
   const response = await page.request.get(href);
   expect(response.ok()).toBeTruthy();
-  expect(await response.text()).toContain("title: An intentionally long");
+  const downloaded = parseContent(await response.text(), "download.md", "Default author");
+  expect(downloaded.title).toBe(await page.getByRole("heading", { level: 1 }).textContent());
+  expect(downloaded.body).toContain("## The next step");
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
   ).toBeTruthy();
@@ -65,9 +68,17 @@ test("archives and complete articles work without JavaScript in system dark mode
   const page = await context.newPage();
   await page.goto("./");
   await expect(page.getByRole("button", { name: "Finder" })).toBeHidden();
-  expect(await page.locator("body").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-    "rgb(20, 20, 19)",
+  const darkBackground = await page
+    .locator("body")
+    .evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(await page.locator("html").evaluate((el) => getComputedStyle(el).colorScheme)).toBe(
+    "dark",
   );
+  await page.emulateMedia({ colorScheme: "light" });
+  expect(
+    await page.locator("body").evaluate((el) => getComputedStyle(el).backgroundColor),
+  ).not.toBe(darkBackground);
+  await page.emulateMedia({ colorScheme: "dark" });
   await page.getByRole("link", { name: "Explore the archive" }).click();
   await page.getByRole("link", { name: "Older notes" }).click();
   await page.getByRole("link", { name: "Older notes" }).click();
@@ -114,4 +125,29 @@ test("accessible home, article and Finder in both themes, without page overflow"
     await page.keyboard.press("Escape");
   }
   expect(errors).toEqual([]);
+});
+
+test("selected design uses local CSS, preserves color choice and has no external requests", async ({
+  page,
+  baseURL,
+}, testInfo) => {
+  const requests = [];
+  page.on("request", (request) => requests.push(request.url()));
+  await page.goto("./");
+  const theme = testInfo.project.name.split("-")[0];
+  await expect(page.locator("html")).toHaveAttribute("data-design-theme", theme);
+  const cssLink = page.locator('link[rel="stylesheet"]').last();
+  const href = await cssLink.getAttribute("href");
+  expect(href).toBe(
+    new URL("assets/theme.css", baseURL.endsWith("/") ? baseURL : baseURL + "/").pathname,
+  );
+  const css = await page.request.get(href);
+  expect(css.ok()).toBeTruthy();
+  expect(css.headers()["content-type"]).toContain("text/css");
+  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+  await page.getByRole("button", { name: "Color theme: system. Change theme" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  expect(requests.every((url) => new URL(url).origin === new URL(baseURL).origin)).toBeTruthy();
 });

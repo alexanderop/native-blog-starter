@@ -1,5 +1,7 @@
 # Reusable native blog starter specification
 
+Current implementation note: the owner subsequently approved TypeScript and Valibot for build tooling and local CSS themes. The original research contract below is preserved as historical evidence. See [current architecture](../architecture.md) and [themes](../themes.md).
+
 Status is proposed, ready for implementation planning. No behavior in this document has been implemented by this research task. Research date is 2026-10-03. The baseline is commit `0a250ff`, with separate uncommitted preview-server work observed in the checkout.
 
 The [arena decision record](./reusable-blog-starter-arena.md) records the alternatives, independent scores, selected base, and unresolved evidence.

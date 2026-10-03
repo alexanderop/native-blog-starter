@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { setTimeout as delay } from "node:timers/promises";
 import { fixture } from "./fixtures/site.mjs";
-import { projectRoot } from "../scripts/build.mjs";
+import { projectRoot } from "../scripts/build.ts";
 async function eventually(check) {
   for (let i = 0; i < 100; i++) {
     if (await check()) return;
@@ -16,9 +16,9 @@ async function eventually(check) {
 test("developer loop reloads configuration, retains last good build and fails an invalid clean start", async (t) => {
   const f = await fixture({ count: 1 });
   t.after(() => rm(f.root, { recursive: true, force: true }));
-  for (const dir of ["lib", "templates", "scripts"])
+  for (const dir of ["src", "scripts"])
     await cp(resolve(projectRoot, dir), resolve(f.root, dir), { recursive: true });
-  const child = spawn(process.execPath, ["scripts/dev.mjs"], {
+  const child = spawn(process.execPath, ["scripts/dev.ts"], {
     cwd: f.root,
     env: { PATH: process.env.PATH, PORT: "0" },
     stdio: ["ignore", "pipe", "pipe"],
@@ -58,10 +58,37 @@ test("developer loop reloads configuration, retains last good build and fails an
   });
   assert.match(await (await fetch(origin + "/new/")).text(), /Changed by author/);
   assert.equal((await fetch(origin + "/")).status, 404);
+  const lastGood = await (await fetch(origin + "/new/")).text();
+  await writeFile(post, source + "\n- ");
+  await eventually(() => Promise.resolve(log.includes("Invalid list item")));
+  assert.equal(await (await fetch(origin + "/new/")).text(), lastGood);
+  const buildsBeforeRepair = log.match(/Built /g).length;
+  await writeFile(post, source + "\nRecovered publication.");
+  await eventually(() => Promise.resolve(log.match(/Built /g).length > buildsBeforeRepair));
+  assert.match(
+    await readFile(resolve(f.root, "dist/blog/note-01/index.html"), "utf8"),
+    /Recovered publication/,
+  );
+
+  const tokens = resolve(f.root, "themes/editorial/tokens.css");
+  await writeFile(
+    tokens,
+    (await readFile(tokens, "utf8")) + "\n:root { --theme-probe: updated; }\n",
+  );
+  await eventually(async () =>
+    (await (await fetch(origin + "/new/assets/tokens.css")).text()).includes("--theme-probe"),
+  );
+  await writeFile(
+    resolve(f.root, "site.config.mjs"),
+    `export default ${JSON.stringify({ ...f.config, basePath: "/new/", theme: "minimal" })}`,
+  );
+  await eventually(async () =>
+    (await (await fetch(origin + "/new/")).text()).includes('data-design-theme="minimal"'),
+  );
   child.kill();
   await new Promise((ok) => child.once("exit", ok));
   await writeFile(post, "invalid frontmatter");
-  const invalid = spawnSync(process.execPath, ["scripts/dev.mjs"], {
+  const invalid = spawnSync(process.execPath, ["scripts/dev.ts"], {
     cwd: f.root,
     encoding: "utf8",
     timeout: 5000,
@@ -73,10 +100,10 @@ test("developer loop reloads configuration, retains last good build and fails an
 test("new-post creates a private draft and refuses overwrite", async (t) => {
   const f = await fixture({ count: 0 });
   t.after(() => rm(f.root, { recursive: true, force: true }));
-  for (const dir of ["lib", "templates", "scripts"])
+  for (const dir of ["src", "scripts"])
     await cp(resolve(projectRoot, dir), resolve(f.root, dir), { recursive: true });
   const run = () =>
-    spawnSync(process.execPath, ["scripts/new-post.mjs", "a-new-note"], {
+    spawnSync(process.execPath, ["scripts/new-post.ts", "a-new-note"], {
       cwd: f.root,
       encoding: "utf8",
     });

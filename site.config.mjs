@@ -1,6 +1,7 @@
-/** @type {import('./lib/types.js').Config} */
+/** @satisfies {import('./src/core/schemas.ts').ConfigInput} */
 export default {
   name: "Fieldnotes",
+  theme: "editorial",
   description: "Notes on making useful things. Engineering, design, and the space between them.",
   language: "en",
   author: "Alex Morgan",

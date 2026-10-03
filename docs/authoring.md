@@ -19,7 +19,7 @@ Write a paragraph.
 
 ## Metadata
 
-This is a restricted format, not YAML. Each line is `key: value`. Strings may have matching single or double quotes. Multiline scalars, comments, escapes inside quoted strings, and nested structures are unsupported. Required fields are title, description, date, and category. Author defaults to site configuration. Tags are a bracketed, comma-separated array of plain names using letters, digits, spaces, and hyphens. Duplicate tags are removed.
+This is a restricted format, not YAML. Each line is `key: value`. Strings may have matching single or double quotes. The outer pair is removed; interior quotes and backslashes remain literal. Markdown downloads quote text fields to preserve their contents. Multiline scalars, comments, escapes inside quoted strings, and nested structures are unsupported. Required fields are title, description, date, and category. Author defaults to site configuration. Tags are a bracketed, comma-separated array of plain names using letters, digits, spaces, and hyphens. Duplicate tags are removed.
 
 `draft` and `featured` accept only `true` or `false`. Unknown and duplicate fields fail with the filename and line. Standalone pages accept only title and description.
 
@@ -35,7 +35,7 @@ One featured post can move to the first homepage slot. `featuredSlug` overrides 
 - `##`, `###`, and `####` produce headings. The page title supplies h1. Heading IDs are unique and deterministic.
 - `**strong**`, `*emphasis*`, `_emphasis_`, and single-backtick inline code are supported. Use simple balanced delimiters; nested emphasis is not a supported grammar. Code contents stay literal.
 - Inline links use `[label](/about/)`. Link labels are plain text. Destinations contain no spaces or closing parentheses. HTTP(S), mailto, fragments, and logical root paths are accepted. Source-relative Markdown links are unsupported.
-- Flat `- ` or `* ` lists and `1. ` numbered lists have single-paragraph items. Numbering renders from one. Nested lists are rejected.
+- Flat `- ` or `* ` lists and `1. ` numbered lists have single-paragraph items. Markers require an ASCII space and nonblank item text; incomplete items fail with a diagnostic. Numbering renders from one. Nested lists are rejected.
 - Standalone `![description](/media/image.svg)` images use local files. Empty alt explicitly marks a decorative image. Images scale to the reading width; there is no image processing or remote image fetch.
 - Consecutive `> ` lines form one blockquote.
 - Triple-backtick fences optionally accept a word-like language label. Close on its own line. Code is escaped, horizontally scrollable, and not syntax highlighted.

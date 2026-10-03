@@ -1,8 +1,14 @@
-import { cp, mkdir, writeFile, mkdtemp } from "node:fs/promises";
+import { cp, mkdir, writeFile, mkdtemp, symlink } from "node:fs/promises";
 import { resolve } from "node:path";
 import { tmpdir } from "node:os";
-import { projectRoot } from "../../scripts/build.mjs";
-export async function fixture({ root, count = 23, base = "/", name = "Fixture Journal" } = {}) {
+import { projectRoot } from "../../scripts/build.ts";
+export async function fixture({
+  root,
+  count = 23,
+  base = "/",
+  name = "Fixture Journal",
+  theme = "editorial",
+} = {}) {
   root ??= await mkdtemp(resolve(tmpdir(), "native-blog-"));
   for (const dir of ["content/blog/_drafts", "content/pages", "public/brand", "public/media"])
     await mkdir(resolve(root, dir), { recursive: true });
@@ -12,12 +18,16 @@ export async function fixture({ root, count = 23, base = "/", name = "Fixture Jo
   await cp(resolve(projectRoot, "public/fonts"), resolve(root, "public/fonts"), {
     recursive: true,
   });
+  await symlink(resolve(projectRoot, "node_modules"), resolve(root, "node_modules"), "dir");
+  await writeFile(resolve(root, "package.json"), JSON.stringify({ type: "module" }));
+  await cp(resolve(projectRoot, "themes"), resolve(root, "themes"), { recursive: true });
   const svg =
     '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360"><rect width="960" height="360" fill="#a34d32"/></svg>';
   await writeFile(resolve(root, "public/brand/logo.svg"), svg);
   await writeFile(resolve(root, "public/media/diagram.svg"), svg);
   const config = {
     name,
+    theme,
     description: "A publication owned by its author.",
     language: "en",
     author: "Taylor Chen",

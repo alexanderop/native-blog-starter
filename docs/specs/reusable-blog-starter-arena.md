@@ -1,5 +1,7 @@
 # Arena decision for the native blog starter
 
+Current implementation note: the owner subsequently approved TypeScript and Valibot for build tooling and local CSS themes. The original research contract below is preserved as historical evidence. See [current architecture](../architecture.md) and [themes](../themes.md).
+
 Research completed on 2026-10-03. The deliverable is the [proposed implementation specification](./reusable-blog-starter.md). Application code, package installation, commits, remote creation, and deployment are outside this task.
 
 ## Decision

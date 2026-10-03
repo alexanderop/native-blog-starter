@@ -2,6 +2,10 @@ name: Publish Pages
 on:
   workflow_dispatch:
     inputs:
+      demo:
+        description: Publish all three themes with a design switcher
+        type: boolean
+        default: false
       site_url:
         description: Public origin, for example https://name.github.io
         required: true
@@ -34,10 +38,15 @@ jobs:
         env:
           SITE_URL: ${{ inputs.site_url }}
           BASE_PATH: ${{ inputs.base_path }}
-      - run: node scripts/artifact-digest.mjs > .preview/deploy.digest
+      - if: inputs.demo
+        run: pnpm build:demo && pnpm verify:static
+        env:
+          SITE_URL: ${{ inputs.site_url }}
+          BASE_PATH: ${{ inputs.base_path }}
+      - run: node scripts/artifact-digest.ts > .preview/deploy.digest
       - uses: actions/configure-pages@v5
-      - run: node scripts/artifact-digest.mjs --verify .preview/deploy.digest
-      - uses: actions/upload-pages-artifact@v3
+      - run: node scripts/artifact-digest.ts --verify .preview/deploy.digest
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
       - uses: actions/deploy-pages@v4

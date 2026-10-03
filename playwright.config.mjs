@@ -8,22 +8,52 @@ export default defineConfig({
   use: { trace: "retain-on-failure", screenshot: "only-on-failure" },
   webServer: {
     command: "node tests/fixtures/server.mjs",
-    url: "http://127.0.0.1:5272/people/alex/",
+    url: "http://127.0.0.1:5277/native-blog-starter/",
     reuseExistingServer: false,
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"], baseURL: "http://127.0.0.1:5271" } },
-    {
-      name: "mobile",
-      use: {
-        ...devices["iPhone 13"],
-        defaultBrowserType: "chromium",
-        baseURL: "http://127.0.0.1:5271",
+    ["editorial", 5271],
+    ["minimal", 5273],
+    ["paper", 5275],
+  ]
+    .flatMap(([theme, port]) => [
+      {
+        name: `${theme}-desktop`,
+        testMatch: "**/journeys.spec.mjs",
+        use: { ...devices["Desktop Chrome"], baseURL: `http://127.0.0.1:${port}` },
       },
-    },
-    {
-      name: "nested",
-      use: { ...devices["Desktop Chrome"], baseURL: "http://127.0.0.1:5272/people/alex/" },
-    },
-  ],
+      {
+        name: `${theme}-mobile`,
+        testMatch: "**/journeys.spec.mjs",
+        use: {
+          ...devices["iPhone 13"],
+          defaultBrowserType: "chromium",
+          baseURL: `http://127.0.0.1:${port}`,
+        },
+      },
+      {
+        name: `${theme}-nested`,
+        testMatch: "**/journeys.spec.mjs",
+        use: { ...devices["Desktop Chrome"], baseURL: `http://127.0.0.1:${port + 1}/people/alex/` },
+      },
+    ])
+    .concat([
+      {
+        name: "demo-desktop",
+        testMatch: "**/demo.spec.mjs",
+        use: {
+          ...devices["Desktop Chrome"],
+          baseURL: "http://127.0.0.1:5277/native-blog-starter/",
+        },
+      },
+      {
+        name: "demo-mobile",
+        testMatch: "**/demo.spec.mjs",
+        use: {
+          ...devices["iPhone 13"],
+          defaultBrowserType: "chromium",
+          baseURL: "http://127.0.0.1:5277/native-blog-starter/",
+        },
+      },
+    ]),
 });

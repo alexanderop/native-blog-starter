@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { rm, symlink } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fixture } from "./fixtures/site.mjs";
-import { build } from "../scripts/build.mjs";
-import { serve } from "../scripts/serve.mjs";
+import { build } from "../scripts/build.ts";
+import { serve } from "../scripts/serve.ts";
 test("preview serves the declared base, HEAD and MIME, refusing escapes and writes", async (t) => {
   const f = await fixture({ count: 1, base: "/nested/blog/" });
   t.after(() => rm(f.root, { recursive: true, force: true }));

@@ -3,23 +3,27 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node scripts/dev.mjs",
-    "build": "node scripts/build.mjs",
-    "preview": "node scripts/serve.mjs",
-    "new-post": "node scripts/new-post.mjs",
+    "dev": "node scripts/dev.ts",
+    "build": "node scripts/build.ts",
+    "preview": "node scripts/serve.ts",
+    "new-post": "node scripts/new-post.ts",
     "format": "vp fmt . --write",
-    "check": "vp check && tsc -p tsconfig.node.json && tsc -p tsconfig.browser.json && node scripts/check-policy.mjs",
+    "check": "vp check && tsc -p tsconfig.node.json && tsc -p tsconfig.browser.json && node scripts/check-policy.ts",
     "test": "node --test tests/*.test.mjs",
     "test:e2e": "playwright test",
     "test:visual": "playwright test --config playwright.visual.config.mjs",
-    "verify:static": "node scripts/check-static.mjs",
-    "verify": "pnpm check && pnpm test && pnpm build && pnpm verify:static && pnpm test:e2e"
+    "verify:static": "node scripts/check-static.ts",
+    "verify": "pnpm check && pnpm test && pnpm build && pnpm verify:static && pnpm test:e2e",
+    "build:demo": "node scripts/build-demo.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
     "@playwright/test": "1.63.0",
     "@types/node": "24.19.1",
+    "fast-check": "4.10.2",
+    "oxc-parser": "0.152.0",
     "typescript": "7.0.2",
+    "valibot": "1.5.0",
     "vite-plus": "1.0.0"
   },
   "engines": {
