@@ -1,4 +1,4 @@
-import type { Heading, RenderedMarkdown } from "./types.ts";
+import type { CodeBlock, Heading, HighlightSnapshot, RenderedMarkdown } from "./types.ts";
 import { escape as e, publicUrl, slugify } from "./urls.ts";
 export function inline(source: string, base: string): string {
   let html = "",
@@ -38,11 +38,24 @@ export function inline(source: string, base: string): string {
   }
   return html;
 }
-export function markdown(source: string, base: string = "/"): RenderedMarkdown {
+export function codeKey(block: Pick<CodeBlock, "language" | "text">): string {
+  return JSON.stringify([block.language, block.text]);
+}
+export function markdown(
+  source: string,
+  base: string = "/",
+  highlights?: HighlightSnapshot,
+): RenderedMarkdown & { readonly codeBlocks: readonly CodeBlock[] } {
   const lines = source.split(/\r?\n/),
-    html = [],
+    html: string[] = [],
     used = new Set(["main", "finder-heading", "finder-input", "finder-results"]);
   const headings: Heading[] = [];
+  const codeBlocks: CodeBlock[] = [];
+  const plain: string[] = [];
+  const push = (markup: string, searchMarkup: string = markup): void => {
+    html.push(markup);
+    plain.push(searchMarkup);
+  };
   const cells = (value: string) =>
     value
       .slice(1, -1)
@@ -66,15 +79,41 @@ export function markdown(source: string, base: string = "/"): RenderedMarkdown {
       throw Error(`body line ${i + 1}: Unsupported Markdown construct`);
     if (line.startsWith("```")) {
       if (!/^```[\w-]*$/.test(line)) throw Error(`body line ${i + 1}: Invalid code fence`);
+      const bodyLine = i + 1;
       const code = [];
       const label = line.slice(3);
       i++;
       while (i < lines.length && lines[i] !== "```") code.push(lines[i++]);
       if (i === lines.length) throw Error("Unclosed code fence");
       i++;
-      html.push(
-        `<pre tabindex="0" aria-label="${e(label || "Code")} example"><code>${e(code.join("\n"))}</code></pre>`,
-      );
+      const block = { language: label, text: code.join("\n"), bodyLine };
+      codeBlocks.push(block);
+      const escaped = e(block.text);
+      const tokens = highlights?.get(codeKey(block));
+      const classes = {
+        plain: "",
+        comment: "syntax-comment",
+        keyword: "syntax-keyword",
+        string: "syntax-string",
+        number: "syntax-number",
+        function: "syntax-function",
+        type: "syntax-type",
+        variable: "syntax-variable",
+        punctuation: "syntax-punctuation",
+      } as const;
+      if (tokens && tokens.map((token) => token.text).join("") !== block.text)
+        throw Error("Highlight tokens changed code text");
+      const highlighted =
+        tokens
+          ?.map((token) => {
+            if (!Object.hasOwn(classes, token.role)) throw Error("Invalid syntax role");
+            const name = classes[token.role];
+            return name ? `<span class="${name}">${e(token.text)}</span>` : e(token.text);
+          })
+          .join("") ?? escaped;
+      const wrap = (codeHtml: string) =>
+        `<pre tabindex="0" aria-label="${e(label || "Code")} example"><code>${codeHtml}</code></pre>`;
+      push(wrap(highlighted), wrap(escaped));
       continue;
     }
     const heading = line.match(/^(#{2,4})\s+(.+)$/);
@@ -85,16 +124,14 @@ export function markdown(source: string, base: string = "/"): RenderedMarkdown {
       while (used.has(id)) id = `${stem}-${n++}`;
       used.add(id);
       headings.push({ id, title: heading[2], level: heading[1].length });
-      html.push(
-        `<h${heading[1].length} id="${id}">${inline(heading[2], base)}</h${heading[1].length}>`,
-      );
+      push(`<h${heading[1].length} id="${id}">${inline(heading[2], base)}</h${heading[1].length}>`);
       i++;
       continue;
     }
     const image = line.match(/^!\[([^\]]*)\]\(([^\s)]+)\)$/);
     if (image) {
       if (!image[2].startsWith("/media/")) throw Error("Images must be in /media/");
-      html.push(
+      push(
         `<figure><img src="${e(publicUrl(base, image[2]))}" alt="${e(image[1])}" loading="lazy" decoding="async"></figure>`,
       );
       i++;
@@ -111,13 +148,13 @@ export function markdown(source: string, base: string = "/"): RenderedMarkdown {
         i++;
       }
       const tag = ordered ? "ol" : "ul";
-      html.push(`<${tag}>${items.join("")}</${tag}>`);
+      push(`<${tag}>${items.join("")}</${tag}>`);
       continue;
     }
     if (line.startsWith("> ")) {
       const quote = [];
       while (lines[i]?.startsWith("> ")) quote.push(lines[i++].slice(2));
-      html.push(`<blockquote><p>${inline(quote.join(" "), base)}</p></blockquote>`);
+      push(`<blockquote><p>${inline(quote.join(" "), base)}</p></blockquote>`);
       continue;
     }
     if (line.startsWith("|") && /^\|[\s:|-]+\|$/.test(lines[i + 1] ?? "")) {
@@ -129,7 +166,7 @@ export function markdown(source: string, base: string = "/"): RenderedMarkdown {
         if (row.length !== headers.length) throw Error("Inconsistent table columns");
         rows.push(row);
       }
-      html.push(
+      push(
         `<div class="table-scroll" tabindex="0" role="region" aria-label="Article table"><table><thead><tr>${headers.map((c) => `<th scope="col">${inline(c, base)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${row.map((c) => `<td>${inline(c, base)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`,
       );
       continue;
@@ -154,7 +191,7 @@ export function markdown(source: string, base: string = "/"): RenderedMarkdown {
       i++;
       if (body.some((l) => /^(#|::|```)/.test(l)))
         throw Error("Editorial blocks accept plain paragraph lines only");
-      html.push(
+      push(
         match[1] === "callout"
           ? `<aside class="callout"><strong>${e(attrs.title ?? "Note")}</strong><p>${inline(body.join(" "), base)}</p></aside>`
           : `<figure class="note-figure"><div>${inline(body.join(" "), base)}</div><figcaption>${e(attrs.label ?? "")} ${e(attrs.caption ?? "")}</figcaption></figure>`,
@@ -169,10 +206,11 @@ export function markdown(source: string, base: string = "/"): RenderedMarkdown {
       !/^(#|```|::|> |\||!\[|[-*] |\d+\. |\s+[-*]\s)/.test(lines[i])
     )
       paragraph.push(lines[i++]);
-    html.push(`<p>${inline(paragraph.join(" "), base)}</p>`);
+    push(`<p>${inline(paragraph.join(" "), base)}</p>`);
   }
   const output = html.join("\n");
-  const text = output
+  const text = plain
+    .join("\n")
     .replace(/<[^>]*>/g, " ")
     .replace(
       /&(?:amp|lt|gt|quot|#39);/g,
@@ -180,5 +218,5 @@ export function markdown(source: string, base: string = "/"): RenderedMarkdown {
     )
     .replace(/\s+/g, " ")
     .trim();
-  return { html: output, headings, text };
+  return { html: output, headings, text, codeBlocks };
 }

@@ -62,7 +62,7 @@ export async function fixture({
     const id = String(i).padStart(2, "0");
     const body =
       i === count
-        ? `## Start here\n\nA **useful** note with _emphasis_, a [local link](/about/), and literal \`<b>code</b>\`.\n\n- First point\n- Second point\n\n## The next step\n\n${"A longer paragraph to make reading navigation observable. ".repeat(60)}\n\n### Details\n\n![Fixture diagram](/media/diagram.svg)\n\n\`\`\`js\nconst deliberatelyLongLine = '${"x".repeat(230)}';\n\`\`\`\n\n| Column one | Column two | Column three |\n| --- | --- | --- |\n| A deliberately wide table value | Another wide table value | A third wide value |\n\n## Finish\n\nUse the native contents links.\n`
+        ? `## Start here\n\nA **useful** note with _emphasis_, a [local link](/about/), and literal \`<b>code</b>\`.\n\n- First point\n- Second point\n\n## The next step\n\n${"A longer paragraph to make reading navigation observable. ".repeat(60)}\n\n### Details\n\n![Fixture diagram](/media/diagram.svg)\n\n\`\`\`ts\n/* A multiline comment.\n   Keep its state across lines. */\ntype Count = number;\nfunction greet(name: string): string { return name; }\nconst count: Count = 42;\nconst deliberatelyLongLine = '${"x".repeat(230)}';\n\`\`\`\n\n| Column one | Column two | Column three |\n| --- | --- | --- |\n| A deliberately wide table value | Another wide table value | A third wide value |\n\n## Finish\n\nUse the native contents links.\n`
         : "## A thought\n\nAn independent fixture article.\n";
     await writeFile(
       resolve(root, `content/blog/note-${id}.md`),

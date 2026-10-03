@@ -23,6 +23,8 @@ Flat lists keep a sequence readable. This is a small Markdown subset, so nested 
 ## Show the code
 
 ```js
+/* Code is highlighted at build time.
+   The browser receives only HTML and CSS. */
 const message = "<p>Keep authored code literal.</p>";
 console.log(message);
 ```

@@ -52,3 +52,9 @@ Run `pnpm build:demo` to publish the same content in all three bundled themes wi
 The switcher uses native links styled as a segmented control. It works without JavaScript. Each version links to its own articles, search index, and downloads. The light/dark preference continues across theme versions.
 
 The ordinary `pnpm build` still publishes only the selected theme. The demo is an explicit alternate build, with additional static copies and no new browser dependencies. Set `SITE_URL` and `BASE_PATH` as for any other build. Enable the **demo** input in the Publish Pages workflow to deploy this version.
+
+## Syntax colors
+
+Themes can define `--syntax-plain`, `--syntax-comment`, `--syntax-keyword`, `--syntax-string`, `--syntax-number`, `--syntax-function`, `--syntax-type`, `--syntax-variable`, and `--syntax-punctuation` in `tokens.css`. Set values for explicit light, explicit dark, and system dark modes. Shared code styles fall back to `--ink` when a custom theme omits these variables.
+
+These roles map TextMate grammar scopes to a small semantic palette. They do not reproduce every VS Code theme style. Code inherits the existing monospace font and size. Review each syntax foreground against `--raised`, the code-block background. Browser tests check a 4.5:1 contrast ratio for every rendered role in all bundled themes.

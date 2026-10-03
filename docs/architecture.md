@@ -5,6 +5,7 @@ The TypeScript tooling uses a functional core and an imperative shell. The core 
 ```text
 scripts/build.ts
   readProject(root, env)         src/shell/read-project.ts
+  highlightProject(inputs)     src/shell/highlight.ts
   prepareBuild(inputs)          src/core/prepare-build.ts
   commitBuild(plan, options)    src/shell/commit-build.ts
 ```
@@ -38,3 +39,13 @@ The build requires installed tooling dependencies, including Valibot. Only stati
 ## Local themes
 
 Configuration selects a safe theme slug, defaulting to `editorial`. The shell validates that selection before reading the two CSS files under `themes/<slug>`. The core receives a typed theme snapshot, checks its identity, and emits its token and layout files. Inactive themes are not read or published. Shared templates retain the interaction, content, and accessibility contracts. See [themes](themes.md).
+
+## Syntax highlighting
+
+`markdown.ts` returns raw code blocks from the same parser that renders them. `collect` filters drafts before parsing bodies and attaches each block's full source location. `highlightProject` uses this pure collection pass to discover public code before loading Shiki.
+
+The shell creates one highlighter for the supported languages used in a build and disposes it in `finally`. Blocks share a result when their exact language label and text match. Valibot validates returned token colors against a finite semantic vocabulary. Joined token text must equal the input. Unsupported labels produce located warnings, while unexpected adapter failures stop publication.
+
+`ProjectInputs.highlights` is a readonly map of project-owned tokens, keyed by the language and text tuple. The pure renderer owns escaping and maps finite roles to fixed CSS classes. Its plain text projection stays separate from highlighted HTML, so spans cannot change search or reading time. Demo variants reuse the same snapshot across all three designs. This repeats the small pure Markdown pass instead of introducing a document AST or async core APIs.
+
+`SyntaxEngineFactory` is the shell's injectable effect boundary. Tests inject failures through the normal build entrypoints to verify disposal and unchanged output. Production uses Shiki. No highlighter types or effects enter `src/core`.

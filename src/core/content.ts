@@ -4,6 +4,8 @@ import { markdown } from "./markdown.ts";
 import { PageMetadataSchema, PostMetadataSchema, logicalRoute } from "./schemas.ts";
 import type {
   Config,
+  HighlightSnapshot,
+  LocatedCodeBlock,
   ContentSource,
   Page,
   PublishedPost,
@@ -15,25 +17,25 @@ export function parseContent(
   file: string,
   author: string,
   page?: false,
-): PostMetadata & { readonly body: string };
+): PostMetadata & { readonly body: string; readonly bodyLine: number };
 export function parseContent(
   source: string,
   file: string,
   author: string,
   page: true,
-): PageMetadata & { readonly body: string };
+): PageMetadata & { readonly body: string; readonly bodyLine: number };
 export function parseContent(
   source: string,
   file: string,
   author: string,
   page: boolean,
-): (PostMetadata | PageMetadata) & { readonly body: string };
+): (PostMetadata | PageMetadata) & { readonly body: string; readonly bodyLine: number };
 export function parseContent(
   source: string,
   file: string,
   author: string,
   page = false,
-): (PostMetadata | PageMetadata) & { readonly body: string } {
+): (PostMetadata | PageMetadata) & { readonly body: string; readonly bodyLine: number } {
   const lines = source.replace(/\r\n/g, "\n").split("\n");
   const end = lines.indexOf("---", 1);
   if (lines[0] !== "---" || end < 1)
@@ -87,20 +89,37 @@ export function parseContent(
       data[key] === undefined ? `Missing ${key}` : issue.message,
     );
   }
-  return { ...parsed.output, body: lines.slice(end + 1).join("\n") };
+  return { ...parsed.output, body: lines.slice(end + 1).join("\n"), bodyLine: end + 2 };
 }
 
 export function collect(
   sources: readonly ContentSource[],
   config: Config,
-): { readonly posts: readonly PublishedPost[]; readonly pages: readonly Page[] } {
+  highlights?: HighlightSnapshot,
+): {
+  readonly posts: readonly PublishedPost[];
+  readonly pages: readonly Page[];
+  readonly codeBlocks: readonly LocatedCodeBlock[];
+} {
+  const codeBlocks: LocatedCodeBlock[] = [];
   const posts: PublishedPost[] = [],
     pages: Page[] = [];
   for (const input of sources.toSorted((a, b) => a.file.localeCompare(b.file))) {
     try {
       if (input.kind === "page") {
-        const data = parseContent(input.source, input.file, config.author, true);
-        const rendered = markdown(data.body, config.basePath);
+        const { bodyLine, ...data } = parseContent(input.source, input.file, config.author, true);
+        const { codeBlocks: blocks, ...rendered } = markdown(
+          data.body,
+          config.basePath,
+          highlights,
+        );
+        codeBlocks.push(
+          ...blocks.map((block) => ({
+            ...block,
+            source: input.file,
+            line: bodyLine + block.bodyLine - 1,
+          })),
+        );
         pages.push({
           ...data,
           ...rendered,
@@ -110,9 +129,20 @@ export function collect(
           minutes: Math.max(1, Math.ceil(rendered.text.split(/\s+/).length / 220)),
         });
       } else {
-        const data = parseContent(input.source, input.file, config.author);
+        const { bodyLine, ...data } = parseContent(input.source, input.file, config.author);
         if (data.draft) continue;
-        const rendered = markdown(data.body, config.basePath);
+        const { codeBlocks: blocks, ...rendered } = markdown(
+          data.body,
+          config.basePath,
+          highlights,
+        );
+        codeBlocks.push(
+          ...blocks.map((block) => ({
+            ...block,
+            source: input.file,
+            line: bodyLine + block.bodyLine - 1,
+          })),
+        );
         posts.push({
           ...data,
           ...rendered,
@@ -131,5 +161,5 @@ export function collect(
       });
     }
   }
-  return { posts, pages };
+  return { posts, pages, codeBlocks };
 }

@@ -1,3 +1,4 @@
+import { highlightProject } from "../src/shell/highlight.ts";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { demoThemeIds, prepareDemo } from "../src/core/demo.ts";
@@ -13,7 +14,10 @@ export async function buildDemo(options: BuildOptions = {}): Promise<BuildManife
   await checkOutput(root, out);
   const inputs = await readProject(root, options.env ?? process.env);
   const themes = await Promise.all(demoThemeIds.map((theme) => readTheme(root, { theme })));
-  const result = prepareDemo(inputs, themes);
+  const highlighted = await highlightProject(inputs, options.syntaxEngineFactory);
+  for (const warning of highlighted.warnings)
+    console.warn(`${warning.source}:${warning.line}: ${warning.message}`);
+  const result = prepareDemo(highlighted.inputs, themes);
   if (!result.ok)
     throw Error(
       result.errors
