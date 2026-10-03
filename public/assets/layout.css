@@ -1,0 +1,212 @@
+.page-shell,
+.site-header {
+  max-width: 1600px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 110px;
+}
+.brand {
+  margin-right: auto;
+  display: flex;
+}
+.site-header nav,
+.header-actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+.site-header nav,
+.header-actions,
+.eyebrow,
+.micro {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.site-header a[aria-current] {
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+.header-actions button {
+  padding: var(--space-1);
+  min-height: 40px;
+}
+.home-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 10%;
+  padding-block: var(--space-5);
+  min-height: 60vh;
+}
+.intro-rail {
+  position: sticky;
+  top: var(--space-4);
+  align-self: start;
+}
+.intro-rail h1 {
+  font: 36px/1.15 var(--font-mono);
+  letter-spacing: -1.5px;
+  margin-block: var(--space-3);
+  overflow-wrap: anywhere;
+}
+.intro-rail > p:not(.eyebrow) {
+  color: var(--body);
+  max-width: 32ch;
+}
+.intro-rail .micro {
+  margin-top: var(--space-4);
+}
+.home-feed {
+  min-width: 0;
+}
+.site-footer {
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+  margin-top: var(--space-5);
+  color: var(--body);
+  font-size: 13px;
+}
+.footer-wordmark {
+  font: 22px var(--font-mono);
+  color: var(--ink);
+  margin-bottom: var(--space-2);
+}
+.site-footer p {
+  max-width: 44ch;
+}
+.site-footer nav {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: var(--space-2);
+}
+.article-hero {
+  max-width: 1040px;
+  padding-block: var(--space-5);
+  margin-left: 25%;
+}
+.article-hero h1,
+.simple-page h1 {
+  font-size: clamp(30px, 4.2vw, 58px);
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  margin-block: var(--space-3);
+  overflow-wrap: anywhere;
+}
+.standfirst {
+  font-size: 20px;
+  max-width: 55ch;
+  color: var(--body);
+}
+.article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font: 12px var(--font-mono);
+  margin-top: var(--space-4);
+  color: var(--muted);
+}
+.article-body-grid {
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-5);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  gap: 6%;
+}
+.article-rail {
+  position: sticky;
+  top: var(--space-3);
+  align-self: start;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  font-size: 12px;
+}
+.prose {
+  min-width: 0;
+  max-width: var(--reading-width);
+  overflow-wrap: anywhere;
+  color: var(--body);
+}
+.simple-page {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10%;
+  padding-block: var(--space-5);
+  min-height: 60vh;
+}
+.article-neighbors,
+.related-section {
+  margin-left: 25%;
+  margin-top: var(--space-5);
+  max-width: var(--reading-width);
+}
+.article-neighbors {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: 14px;
+}
+.related-section h2 {
+  font-size: 20px;
+}
+.related-section a {
+  display: block;
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+@media (max-width: 760px) {
+  .site-header {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding-block: var(--space-3);
+  }
+  .site-header nav {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .home-grid,
+  .simple-page {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    padding-top: var(--space-3);
+  }
+  .intro-rail {
+    position: static;
+  }
+  .intro-rail .micro {
+    display: none;
+  }
+  .article-hero {
+    margin-left: 0;
+    padding-block: var(--space-4);
+  }
+  .article-body-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding-top: var(--space-4);
+  }
+  .article-rail {
+    position: static;
+    max-height: none;
+    order: 2;
+  }
+  .article-neighbors,
+  .related-section {
+    margin-left: 0;
+  }
+  .site-footer {
+    grid-template-columns: 1fr;
+  }
+  .site-footer nav {
+    align-items: start;
+  }
+}

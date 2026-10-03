@@ -1,0 +1,44 @@
+name: Publish Pages
+on:
+  workflow_dispatch:
+    inputs:
+      site_url:
+        description: Public origin, for example https://name.github.io
+        required: true
+      base_path:
+        description: Repository prefix, for example /journal/
+        required: true
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm verify
+        env:
+          SITE_URL: ${{ inputs.site_url }}
+          BASE_PATH: ${{ inputs.base_path }}
+      - run: node scripts/artifact-digest.mjs > .preview/deploy.digest
+      - uses: actions/configure-pages@v5
+      - run: node scripts/artifact-digest.mjs --verify .preview/deploy.digest
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - uses: actions/deploy-pages@v4
+        id: deployment

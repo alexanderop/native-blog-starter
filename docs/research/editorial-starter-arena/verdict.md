@@ -1,0 +1,61 @@
+# Arena cross-judge verdict
+
+## Decision
+
+Use **Candidate A as the base**, then graft Candidate B's strongest author-experience details only where they do not silently decide the unresolved generator-dependency contract.
+
+Candidate A is the more faithful design proposal for this decision stage. It preserves the currently verified install-free generator, clearly separates browser, generator, and development-tool boundaries, and presents `markdown-it` as the explicit alternative that would change the product promise. That matches the request to accept development dependencies without quietly erasing the no-install generator contract. It is also more precise about Vite+ command semantics, deployment artifact verification, system-theme fallback, publication staging, and comprehensive base-path ownership.
+
+Candidate B makes a coherent and defensible product choice: install dependencies and use `markdown-it`. Its ordinary authoring experience is better and it states the resulting contract honestly. However, it turns an unresolved tradeoff into the recommendation, changes the Node/toolchain baseline, converts module layout to TypeScript, and migrates tests to Vite+ in one proposal. Those changes are individually plausible but collectively broaden v1 and weaken the small, low-risk migration. It also contains a materially incorrect Node engine expression and leaves a gap between the tested and deployed build artifact.
+
+## Scores
+
+| Criterion | Candidate A | Candidate B | Judgment |
+| --- | ---: | ---: | --- |
+| 1. Faithfulness to zero-dependency boundaries and explicit user scope | **5** | **4** | A preserves the verified no-install generator and makes the parser-package alternative an explicit later contract decision. B clearly discloses that `markdown-it` ends the guarantee, so it does not hide the change, but it chooses that change despite the request's emphasis that development dependencies alone were accepted and the generator contract must not be silently eliminated. |
+| 2. First-blog onboarding and everyday authoring usability | **4** | **5** | A provides a concrete four-milestone path, a new-post script, authored pages, a small sample set, and a documented bounded grammar. B's normal CommonMark lists/images plus one config file and conventional `pnpm install && pnpm dev` flow are easier for typical authors and avoid maintaining a growing private Markdown dialect. |
+| 3. Source-grounded Vite+ integration with reproducible commands | **5** | **3** | A correctly distinguishes `vp run build/dev` from `vp build/dev`, explains `vp check` type-check configuration, preserves Node/Playwright tests, recommends a local pinned CLI, and flags the separate Vite+ engine requirement. B gets command semantics right and cites official docs, but proposes `engines.node: >=22.18`, which admits unsupported Node 23 and Node 24 versions below 24.11 even though it quotes the supported range as `^22.18.0 || ^24.11.0 || >=26.0.0`. Its `pnpm test -> vp test` migration also adds churn without showing why the existing Node suite should move. |
+| 4. Content/publication safety and base-path correctness | **5** | **4** | Both centralize URL rules and filter drafts before publication endpoints. A is stronger on rejecting invalid URL components, checking local assets/fragments, staging output before replacement, using one normalized URL module everywhere, and requiring the deployment to consume the exact verified artifact. B says CI verifies path variants, then describes `pnpm verify` followed by a fresh Pages build and upload; that final artifact is not explicitly revalidated. |
+| 5. Maintainable small architecture and credible migration | **5** | **4** | A retains checked JavaScript/JSDoc, one package, small renderer boundaries, and four phases ordered around identity/URLs, authoring, publication, and docs. B's module ownership is clear, but simultaneously adopting TypeScript modules, Vite+, Vitest, `markdown-it`, a higher Node floor, render splits, CSS cleanup, pagination, and config redesign creates a larger migration surface. Its instruction to keep the old edition by tag also creates an unsupported-product ambiguity unless ownership is defined. |
+| 6. Observable verification and tests that survive customization | **5** | **4** | Both propose a strong custom-brand fixture, root/base builds, draft sentinels, browser journeys, axe, and macOS visuals. A additionally covers zero/one/multipage content, neutral config, failed-search recovery, unavailable storage, two-page theme persistence, disabled JS, system theme, deployment job gating, and exact artifact consumption. B's rule allowing default branding outside the example-content directory can miss branded sample content copied into output, and its onboarding says to delete `_examples` without explicitly requiring the acceptance fixture to prove a clean post-deletion build. |
+
+**Totals: Candidate A 29/30; Candidate B 24/30.**
+
+## Best grafts from Candidate B
+
+1. **Adopt its three-boundary dependency table.** A states the same distinction in prose, but B's published-site / generator / contributor-tools table is the clearest onboarding explanation. Keep A's recommendation until the parser decision is explicitly accepted.
+2. **Use B's stronger CommonMark option analysis.** If the owner chooses normal Markdown over install-free builds, B's `markdown-it` configuration is a better author experience than extending a regex-like owned parser. Carry over raw-HTML disabled, no evaluated components, explicit editorial extensions, and safe URL handling. Phrase this as the alternative contract or a decision gate, as A does.
+3. **Graft the concrete branding contamination assertion.** Search every generated output for default brand sentinels, including metadata, feeds, footer labels, Markdown downloads, and search data. Do not exempt copied sample content merely because it originated in an examples directory; the clean customization fixture should remove sample content first and prove the generated artifact contains none of it.
+4. **Graft the build manifest cautiously.** A small deterministic manifest containing base path, public post count, and generated routes could make crawling and deployment verification simpler. It should contain no source paths or draft data and should only be added if existing static checks cannot provide the same evidence.
+5. **Use B's deterministic related-post ranking if tags remain in the schema.** Category, then shared-tag count, date, and slug produces more useful results than A's category/date rule while remaining reproducible. A's simpler rule is preferable if tags are not part of v1.
+6. **Keep B's direct rejection of raw HTML.** A implies trusted renderer output and a bounded grammar; the final spec should explicitly say authored raw HTML is rejected rather than sanitized.
+
+## Factual inconsistencies and gaps to fix
+
+### Candidate A
+
+- The authoring section says to start with `node scripts/dev.mjs`, while the tooling section says `pnpm dev` is the documented command. Both can work under the proposed contract, but the final proposal should choose one primary first-run path and explain that the direct Node command preserves no-install generation while `pnpm` enables optional quality tooling.
+- A says categories derive from published content, then allows `category` as required metadata. This is consistent if it means archive/category navigation is derived rather than configured, but the wording should make that distinction explicit.
+- The bounded-parser recommendation still carries meaningful implementation risk. Lists, images, block interactions, escaping, headings, and URL rewriting can become a parser project. The proposal should establish an explicit stop condition: if the documented fixture set cannot be implemented simply and safely, select `markdown-it` and revise the generator contract rather than extending ad hoc parsing.
+- “Static hosting requires directory indexes and real 404 handling” is partly host-specific. The starter can generate directory indexes and `404.html`; whether a platform serves the latter for unknown routes is a deployment capability that must be documented per host.
+
+### Candidate B
+
+- **The proposed Node engine is wrong.** `>=22.18` includes Node 23 and Node 24.0–24.10, while the cited Vite+ test support is `^22.18.0 || ^24.11.0 || >=26.0.0`. Use the exact disjunctive expression, or select and test a narrower supported line such as `^22.18.0`.
+- **The CommonMark and safety wording is too broad.** `markdown-it` with its CommonMark-oriented preset is a credible interoperability choice, and disabling authored HTML removes one major injection path, but neither statement proves the whole publication pipeline is “safe by default.” Custom editorial render rules, URL rewriting, configuration interpolation, image URLs, and generated attributes still need contextual escaping and executable-scheme tests. Say which Markdown profile is configured and claim only the syntax covered by fixtures; do not turn the library's general description into a project-wide security guarantee.
+- **The deployment workflow does not prove the uploaded artifact.** It runs `pnpm verify`, then performs another build with Pages environment values and uploads that later `dist`. The workflow must build once with final `SITE_URL`/`BASE_PATH`, run static crawling and publication checks against that exact directory, then upload the same artifact.
+- The custom-brand assertion permits default-brand strings “outside the example content directory,” but generated output has no reliable source-directory boundary. The fixture should remove the example corpus, build, and assert no default brand or sample sentinel exists anywhere in `dist`.
+- The first-run instruction to delete `content/blog/_examples/` conflicts with the current direct-file collector description unless migration clearly moves samples into that directory and deliberately teaches the collector how examples are excluded. The proposal should specify the final sample layout and test a clone after samples are removed.
+- `site.config.ts` plus TypeScript render/content modules implies a loader or compilation strategy for the Node generator. The proposal never specifies whether Node executes stripped TypeScript, Vite+ transpiles it, or a build step emits JavaScript. That ambiguity matters to reproducible `pnpm build` and to the stated decision not to let Vite own generation.
+- `image` accepts HTTPS URLs, while the asset section says referenced local images are copied. The final contract must state whether remote images are merely emitted as external URLs, whether they are allowed under CSP/privacy goals, and how they behave offline; it must not imply they are copied.
+- “Keep the current repository or a tagged release as the no-install edition” creates a maintenance promise without defining support. A tag is historical, not an edition that receives fixes. State that it is an archived release, or omit the claim.
+- “Do not preserve transitional APIs after their callers move” is sensible internally, but migration from the current starter needs observable compatibility criteria before removal. The proposal should identify which owner-facing config and content contracts are allowed to break.
+
+## Final synthesis
+
+The final proposal should retain A's recommendation: native Node generation, dependency-free browser output, install-free build as the initial contract, and optional pinned development tooling. It should present the parser decision as the one explicit product fork:
+
+- **Preserve no-install generation:** implement and document a deliberately narrow Markdown subset with a strict fixture-based stop condition.
+- **Prefer familiar Markdown:** add `markdown-it`, require `pnpm install`, and plainly retire the no-install generator promise.
+
+Development dependencies and Vite+ do not decide that fork. Vite+ should remain contributor tooling, invoked locally and with exact supported Node ranges. The deploy workflow must validate and upload one identical artifact. The customization fixture must first remove the sample corpus and then prove that no default brand, sample content, draft sentinel, broken link, or base-path error survives anywhere in generated output.
