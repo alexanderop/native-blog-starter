@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
 import { markdown } from "../../src/core/markdown.ts";
 let result;
 try {
-  result = markdown(JSON.parse(readFileSync(0, "utf8")));
+  result = runInNewContext(
+    "parse(source)",
+    { parse: markdown, source: JSON.parse(readFileSync(0, "utf8")) },
+    { timeout: 1500 },
+  );
 } catch (error) {
   assert.ok(error instanceof Error);
   assert.match(

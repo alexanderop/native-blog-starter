@@ -17,7 +17,7 @@ function isolatedMarkdown(source) {
   const child = spawnSync(process.execPath, [parserPath], {
     input: JSON.stringify(source),
     encoding: "utf8",
-    timeout: 1500,
+    timeout: 10000,
     maxBuffer: 1024 * 1024,
   });
   assert.equal(

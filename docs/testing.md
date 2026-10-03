@@ -16,6 +16,8 @@ The original tests exercised valid authored examples, ordinary file writes, and 
 
 The property tests use bounded generators for this project's supported grammar. They do not claim CommonMark conformance or exhaustive proof. The metadata property compares output to independently generated values, not to a value computed by the serializer under test.
 
+The parser runs with a 1.5-second VM execution limit after its child process loads the modules. A separate 10-second process timeout covers startup, input, and output. This keeps CPU contention during Node startup separate from the parser's termination check.
+
 ## Red before green
 
 Before applying the fixes, the generated termination property found the hang after three trials and reduced it to `- `. The metadata property also found leading-space loss, beyond the quoted-title failure identified in review. Six new regression/property tests failed on the original code.
