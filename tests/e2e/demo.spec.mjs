@@ -66,6 +66,7 @@ test("all demo themes work without JavaScript", async ({ browser, baseURL }) => 
       .getByRole("link", { name: "Minimal", exact: true })
       .click();
     await expect(page.getByRole("heading", { name: "Finish", exact: true })).toBeVisible();
+    await expect(page.locator("pre .syntax-keyword").first()).toBeVisible();
   } finally {
     await context.close();
   }

@@ -99,6 +99,7 @@
   font: 13px/1.7 var(--font-mono);
 }
 .prose pre code {
+  color: var(--syntax-plain, var(--ink));
   font: inherit;
   padding: 0;
 }
@@ -252,4 +253,29 @@ dialog::backdrop {
   .article-neighbors {
     flex-direction: column;
   }
+}
+
+.prose .syntax-comment {
+  color: var(--syntax-comment, var(--ink));
+}
+.prose .syntax-keyword {
+  color: var(--syntax-keyword, var(--ink));
+}
+.prose .syntax-string {
+  color: var(--syntax-string, var(--ink));
+}
+.prose .syntax-number {
+  color: var(--syntax-number, var(--ink));
+}
+.prose .syntax-function {
+  color: var(--syntax-function, var(--ink));
+}
+.prose .syntax-type {
+  color: var(--syntax-type, var(--ink));
+}
+.prose .syntax-variable {
+  color: var(--syntax-variable, var(--ink));
+}
+.prose .syntax-punctuation {
+  color: var(--syntax-punctuation, var(--ink));
 }

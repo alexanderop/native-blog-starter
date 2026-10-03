@@ -12,6 +12,30 @@ export interface Heading {
   readonly title: string;
   readonly level: number;
 }
+export interface CodeBlock {
+  readonly language: string;
+  readonly text: string;
+  readonly bodyLine: number;
+}
+export interface LocatedCodeBlock extends CodeBlock {
+  readonly source: string;
+  readonly line: number;
+}
+export type SyntaxRole =
+  | "plain"
+  | "comment"
+  | "keyword"
+  | "string"
+  | "number"
+  | "function"
+  | "type"
+  | "variable"
+  | "punctuation";
+export interface SyntaxToken {
+  readonly text: string;
+  readonly role: SyntaxRole;
+}
+export type HighlightSnapshot = ReadonlyMap<string, readonly SyntaxToken[]>;
 export interface RenderedMarkdown {
   readonly html: string;
   readonly headings: readonly Heading[];
@@ -56,6 +80,7 @@ export interface ThemeSource {
   readonly themeCss: string;
 }
 export interface ProjectInputs {
+  readonly highlights?: HighlightSnapshot;
   readonly theme: ThemeSource;
   readonly config: unknown;
   readonly env?: ConfigOverrides;

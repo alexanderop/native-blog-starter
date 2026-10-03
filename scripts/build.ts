@@ -1,3 +1,5 @@
+import type { SyntaxEngineFactory } from "../src/shell/highlight.ts";
+import { highlightProject } from "../src/shell/highlight.ts";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readProject } from "../src/shell/read-project.ts";
@@ -11,13 +13,20 @@ export interface BuildOptions {
   readonly root?: string;
   readonly out?: string;
   readonly env?: ConfigOverrides;
+  readonly syntaxEngineFactory?: SyntaxEngineFactory;
   readonly beforePromote?: (stage: string) => Promise<void>;
 }
 export async function build(options: BuildOptions = {}): Promise<BuildManifest> {
   const root = resolve(options.root ?? projectRoot);
   const out = resolve(options.out ?? resolve(root, "dist"));
   await checkOutput(root, out);
-  const result = prepareBuild(await readProject(root, options.env ?? process.env));
+  const highlighted = await highlightProject(
+    await readProject(root, options.env ?? process.env),
+    options.syntaxEngineFactory,
+  );
+  for (const warning of highlighted.warnings)
+    console.warn(`${warning.source}:${warning.line}: ${warning.message}`);
+  const result = prepareBuild(highlighted.inputs);
   if (!result.ok)
     throw Error(
       result.errors

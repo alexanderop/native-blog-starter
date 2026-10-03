@@ -85,6 +85,18 @@ test("archives and complete articles work without JavaScript in system dark mode
   await expect(page.locator(".post-row")).toHaveCount(3);
   await page.goto(article);
   await expect(page.getByRole("heading", { name: "Finish", exact: true })).toBeVisible();
+  await expect(page.locator("pre .syntax-keyword").first()).toBeVisible();
+  const darkKeyword = await page
+    .locator("pre .syntax-keyword")
+    .first()
+    .evaluate((el) => getComputedStyle(el).color);
+  await page.emulateMedia({ colorScheme: "light" });
+  expect(
+    await page
+      .locator("pre .syntax-keyword")
+      .first()
+      .evaluate((el) => getComputedStyle(el).color),
+  ).not.toBe(darkKeyword);
   await context.close();
 });
 test("blocked storage falls back without browser errors", async ({ page }) => {
@@ -150,4 +162,92 @@ test("selected design uses local CSS, preserves color choice and has no external
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   expect(requests.every((url) => new URL(url).origin === new URL(baseURL).origin)).toBeTruthy();
+});
+
+test("highlighted code preserves text and readable semantic colors in explicit and system modes", async ({
+  page,
+  baseURL,
+}, testInfo) => {
+  const requests = [];
+  page.on("request", (request) => requests.push(request.url()));
+  await page.goto(article);
+  const code = page.locator("pre code");
+  expect(await code.textContent()).toBe(`/* A multiline comment.
+   Keep its state across lines. */
+type Count = number;
+function greet(name: string): string { return name; }
+const count: Count = 42;
+const deliberatelyLongLine = '${"x".repeat(230)}';`);
+  const palettes = {};
+  for (const mode of ["system-light", "system-dark", "light", "dark"]) {
+    await page.emulateMedia({ colorScheme: mode.endsWith("dark") ? "dark" : "light" });
+    if (mode === "light")
+      await page.getByRole("button", { name: "Color theme: system. Change theme" }).click();
+    if (mode === "dark")
+      await page.getByRole("button", { name: "Color theme: light. Change theme" }).click();
+    palettes[mode] = await page.locator("pre").evaluate((pre) => {
+      const luminance = (color) => {
+        const rgb = color
+          .match(/[\d.]+/g)
+          .slice(0, 3)
+          .map(Number)
+          .map((value) => {
+            const channel = value / 255;
+            return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+          });
+        return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+      };
+      const background = luminance(getComputedStyle(pre).backgroundColor);
+      return Object.fromEntries(
+        [...pre.querySelectorAll("span")].map((span) => {
+          const color = getComputedStyle(span).color;
+          const foreground = luminance(color);
+          return [
+            span.className,
+            {
+              color,
+              contrast:
+                (Math.max(foreground, background) + 0.05) /
+                (Math.min(foreground, background) + 0.05),
+            },
+          ];
+        }),
+      );
+    });
+    for (const role of [
+      "comment",
+      "keyword",
+      "string",
+      "number",
+      "function",
+      "type",
+      "variable",
+      "punctuation",
+    ]) {
+      expect(palettes[mode][`syntax-${role}`], `${mode} ${role}`).toBeDefined();
+      expect(
+        palettes[mode][`syntax-${role}`].contrast,
+        `${mode} ${role} contrast`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+    await page.locator("pre").screenshot({ path: testInfo.outputPath(`syntax-${mode}.png`) });
+  }
+  expect(palettes["system-light"]).toEqual(palettes.light);
+  expect(palettes["system-dark"]).toEqual(palettes.dark);
+  expect(palettes.light["syntax-keyword"].color).not.toBe(palettes.dark["syntax-keyword"].color);
+  expect(palettes.light["syntax-keyword"].color).not.toBe(palettes.light["syntax-string"].color);
+  expect(requests.every((url) => new URL(url).origin === new URL(baseURL).origin)).toBe(true);
+  expect(requests.some((url) => /shiki|\.wasm/.test(url))).toBe(false);
+  await page.route("**/assets/tokens.css", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace(/^.*--syntax-.*$/gm, "");
+    await route.fulfill({ response, body });
+  });
+  await page.reload();
+  const fallback = await code.evaluate((element) => ({
+    plain: getComputedStyle(element).color,
+    keyword: getComputedStyle(element.querySelector(".syntax-keyword")).color,
+  }));
+  expect(fallback.keyword).toBe(fallback.plain);
+  expect(fallback.plain).not.toBe("");
 });

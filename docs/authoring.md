@@ -38,7 +38,7 @@ One featured post can move to the first homepage slot. `featuredSlug` overrides 
 - Flat `- ` or `* ` lists and `1. ` numbered lists have single-paragraph items. Markers require an ASCII space and nonblank item text; incomplete items fail with a diagnostic. Numbering renders from one. Nested lists are rejected.
 - Standalone `![description](/media/image.svg)` images use local files. Empty alt explicitly marks a decorative image. Images scale to the reading width; there is no image processing or remote image fetch.
 - Consecutive `> ` lines form one blockquote.
-- Triple-backtick fences optionally accept a word-like language label. Close on its own line. Code is escaped, horizontally scrollable, and not syntax highlighted.
+- Triple-backtick fences optionally accept a word-like language label. Close on its own line. Code is escaped and horizontally scrollable. Labelled fences receive semantic syntax colors at build time.
 - Pipe tables require a header and separator line. Every row has the same number of cells and starts/ends with a pipe. Write `\|` for a literal pipe inside a cell.
 - Backslash escapes are supported for backslash, backtick, asterisk, underscore, brackets, parentheses, exclamation mark, and pipe.
 - Authored raw HTML is displayed as escaped text. It never executes.
@@ -60,3 +60,11 @@ Write → Preview → Revise
 ```
 
 This parser is deliberately bounded and is not CommonMark. Before expanding syntax, add concrete authoring fixtures. If ordinary content requires a broad CommonMark implementation, reconsider the build-dependency contract and a maintained parser. Do not grow an undocumented replacement for CommonMark.
+
+## Code highlighting
+
+Shiki highlights fenced code during the build. Language labels such as `js`, `ts`, `vue`, `css`, `json`, and `bash` select its bundled grammars. Labels use letters, numbers, underscores, and hyphens. For C++ and C#, use `cpp` and `csharp`.
+
+Unlabelled fences and `text`, `txt`, or `plaintext` fences remain plain. An unsupported language produces a filename and opening-fence line warning, then publishes escaped plain code. A highlighter error fails the build and leaves the last successful publication intact. Draft bodies never reach the highlighter.
+
+Each design theme supplies light and dark syntax colors through CSS variables. Generated spans contain semantic classes, with no inline color styles. Readers download no Shiki JavaScript, grammars, or WebAssembly. Highlighting works without JavaScript and preserves code selection, search text, and original Markdown downloads. Inline code stays literal.

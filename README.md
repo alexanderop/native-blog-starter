@@ -2,7 +2,7 @@
 
 A small editorial blog you can own. Write Markdown, configure your identity, and publish static HTML. Native scrolling, a spatial editorial grid, a sticky reading guide, local fonts, and light/dark themes are included.
 
-The published site requires no packages. Build tooling uses TypeScript and Valibot. Vite+, Oxc, Playwright, axe, and fast-check provide contributor checks. There is no framework, hydration, bundler, Markdown package, analytics, or package CDN in the publication.
+The published site requires no packages. Build tooling uses TypeScript and Valibot. Shiki adds syntax colors during the build, with no highlighter runtime in the browser. Vite+, Oxc, Playwright, axe, and fast-check provide contributor checks. There is no framework, hydration, bundler, Markdown package, analytics, or package CDN in the publication.
 
 ## Start
 

@@ -43,3 +43,9 @@ For broader local exploration, run additional seeds. CI keeps the default seed r
 The policy allows deterministic `node:path` helpers in the core. It rejects filesystem and network imports, shell access, and common ambient effects. It is an architectural check, not a sandbox for hostile source code. Valibot schemas stay pure and do not perform I/O.
 
 Theme integration tests build every bundled theme at root and nested paths. They cover custom theme folders, unused broken themes, missing CSS, traversal, reserved asset collisions, and symlinks. Development-process tests exercise stylesheet edits and changing the configured theme. Browser journeys run against every bundled theme on desktop, mobile, and nested hosting.
+
+## Syntax highlighting coverage
+
+`tests/highlight.test.mjs` checks exact code-text preservation and escaping with generated values, plus literal Shiki cases for aliases, multiline comments, embedded Vue, empty blocks, trailing newlines, and long lines. Plain search results must equal the unhighlighted renderer. Drafts with invalid fences are skipped before engine creation. Repeated code shares one tokenization result.
+
+Both normal and demo builds must publish colored markup. Adapter validation and tokenization failures must dispose the engine and preserve the previous files. Browser journeys assert exact DOM text, distinct computed colors, contrast in light and dark modes, system preference switching, custom-theme fallbacks, and reading without JavaScript. Artifact and network checks guard against a browser Shiki runtime.
