@@ -13,7 +13,7 @@ export function prepareBuild(inputs: ProjectInputs): Result<ValidatedBuildPlan> 
       throw Error(
         `Theme snapshot ${inputs.theme.id} does not match configured theme ${config.theme}`,
       );
-    const content = collect(inputs.sources, config);
+    const content = collect(inputs.sources, config, inputs.assets);
     const pub = publication(content.posts, content.pages, config);
     const files = new Map<OutputPath, string | Uint8Array>(outputs(config, pub));
     files.set(outputPath("assets/tokens.css"), inputs.theme.tokensCss);

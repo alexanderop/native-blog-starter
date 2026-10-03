@@ -27,7 +27,18 @@ export function checkSource(path: string, source: string, root = projectRoot): v
         throw Error(`${path}: Browser cannot import tooling: ${specifier}`);
       return;
     }
-    if (core && specifier !== "valibot" && specifier !== "node:path")
+    if (
+      core &&
+      ![
+        "valibot",
+        "node:path",
+        "image-size",
+        "highlight.js/lib/core",
+        ...["javascript", "typescript", "xml", "css", "json", "bash"].map(
+          (name) => `highlight.js/lib/languages/${name}`,
+        ),
+      ].includes(specifier)
+    )
       throw Error(`${path}: Core dependency is not pure or approved: ${specifier}`);
     if (browser) throw Error(`${path}: Browser package dependency: ${specifier}`);
   }

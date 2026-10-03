@@ -66,7 +66,7 @@ export async function fixture({
         : "## A thought\n\nAn independent fixture article.\n";
     await writeFile(
       resolve(root, `content/blog/note-${id}.md`),
-      `---\ntitle: ${i === count ? "An intentionally long article title about the small choices that make independent publishing pleasant and understandable" : `Fixture note ${id}`}\ndescription: Fixture description ${id}.\ndate: 2026-09-${id}\ncategory: ${i % 2 ? "Craft" : "Engineering"}\ntags: [web, writing]\n---\n\n${body}`,
+      `---\ntitle: ${i === count ? "An intentionally long article title about the small choices that make independent publishing pleasant and understandable" : `Fixture note ${id}`}\ndescription: Fixture description ${id}.\ndate: 2026-09-${id}\ncategory: ${i % 2 ? "Craft" : "Engineering"}\ntags: [web, writing]\ndraft: false\n---\n\n${body}`,
     );
   }
   return { root, config };

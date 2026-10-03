@@ -22,7 +22,7 @@ export function outputs(c: Config, pub: Publication): ReadonlyMap<OutputPath, st
     html(p.route, p.title, article(p, pub, c), p.description);
     put(
       `markdown/${p.slug}.md`,
-      `---\ntitle: ${scalar(p.title)}\ndescription: ${scalar(p.description)}\ndate: ${p.date}\nauthor: ${scalar(p.author)}\ncategory: ${scalar(p.category)}\ntags: [${p.tags.join(", ")}]\n---\n${p.body}`,
+      `---\ntitle: ${scalar(p.title)}\ndescription: ${scalar(p.description)}\ndate: ${p.date}${p.updated ? `\nupdated: ${p.updated}` : ""}\ndraft: false\nauthor: ${scalar(p.author)}\ncategory: ${scalar(p.category)}\ntags: [${p.tags.join(", ")}]\n---\n${p.body}`,
     );
   }
   put(
@@ -61,9 +61,10 @@ export function outputs(c: Config, pub: Publication): ReadonlyMap<OutputPath, st
     "rss.xml",
     `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>${e(c.name)}</title><link>${e(c.siteUrl + c.basePath)}</link><description>${e(c.description)}</description>${pub.posts.map((p) => `<item><title>${e(p.title)}</title><link>${e(c.siteUrl + publicUrl(c.basePath, p.route))}</link><guid>${e(c.siteUrl + publicUrl(c.basePath, p.route))}</guid><description>${e(p.description)}</description><pubDate>${new Date(p.date).toUTCString()}</pubDate></item>`).join("")}</channel></rss>`,
   );
+  const modified = new Map<string, string | undefined>(pub.posts.map((p) => [p.route, p.updated]));
   put(
     "sitemap.xml",
-    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${["/", ...pub.archives.map((a) => a.route), ...pub.pages.map((p) => p.route), ...pub.posts.map((p) => p.route)].map((route) => `<url><loc>${e(c.siteUrl + publicUrl(c.basePath, route))}</loc></url>`).join("")}</urlset>`,
+    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${["/", ...pub.archives.map((a) => a.route), ...pub.pages.map((p) => p.route), ...pub.posts.map((p) => p.route)].map((route) => `<url><loc>${e(c.siteUrl + publicUrl(c.basePath, route))}</loc>${modified.get(route) ? `<lastmod>${modified.get(route)}</lastmod>` : ""}</url>`).join("")}</urlset>`,
   );
   put(
     "robots.txt",

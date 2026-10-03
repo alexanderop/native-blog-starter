@@ -1,6 +1,23 @@
 # Local verification
 
-Verified on 2026-10-03 on macOS with Node 24.12.0 and pnpm 10.28.2.
+Current review on 2026-10-03 on macOS with Node 24.12.0 and pnpm 10.28.2.
+
+## Light-DOM component integration
+
+- `pnpm verify` passes contributor checks, all 52 Node/process tests, the production build, and static validation. Of 82 browser cases, 76 pass across Chromium and desktop/mobile WebKit. All six Firefox cases fail before a page opens with the same macOS `Could not find profile folder` launch error noted below; Firefox remains enabled and the full command is nonzero locally.
+- The component regressions cover failed module loading, two independent copy instances, reconnecting without duplicate writes, aborting a detached Finder request, restoring keyboard shortcuts, and retrying unsafe search responses. Existing all-theme accessibility and no-JavaScript journeys also pass.
+- All 12 visual cases / 36 references pass without snapshot updates for this refactor. Fresh desktop and narrow article/Finder screenshots were inspected. Logs and screenshots are under ignored `artifacts/components/`.
+
+## Authoring improvements
+
+- Contributor format/lint, TypeScript, browser JavaScript, and architectural policies pass. All 52 Node/process tests pass, including draft preview isolation and watcher updates, explicit publication status, updated dates, image dimensions, and code highlighting.
+- Production build and static artifact validation pass. The browser matrix now has 66 journeys: 64 passed locally across Chromium and desktop/mobile WebKit. The two Firefox journeys could not launch the browser: `Could not find profile folder.` The same failure occurred with a project-local temporary directory. This matches the reported [Playwright macOS app-data issue](https://github.com/microsoft/playwright/issues/42768); Firefox behavior is not locally verified. `pnpm verify` therefore remains nonzero on this machine. Firefox is still enabled in the Linux CI and publishing checks.
+- `pnpm test:visual` passes all 12 cases / 36 images. Six article references changed only in the code colors; all six diffs were inspected before replacement, then the comparisons were rerun. Desktop and narrow draft preview screenshots were also inspected, and axe found no violations in those two views.
+- Evidence is under ignored `artifacts/improvements/`: draft screenshots, reviewed code-color differences, and browser/verification logs. No production deployment or hosted CI was run.
+
+## Earlier baseline
+
+The following records the previous baseline before these authoring improvements; its counts and all-green result describe that earlier version.
 
 - `pnpm verify` covers Vite+ formatting/lint, strict TypeScript tooling and checked DOM JavaScript, core boundary and semantic-color policies, 44 Node/process tests, the owner-site build, static artifact validation, and 60 Playwright journeys.
 - The independent publication fixtures cover zero, one, and 23 posts at `/` and `/people/alex/`, replacement identity/assets, complete sample removal, draft sentinels, deterministic output, invalid content, promotion rollback, and copied TypeScript tooling with installed dependencies and static-only output.

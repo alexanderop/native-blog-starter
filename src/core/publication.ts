@@ -53,12 +53,12 @@ export function publication(
   };
 }
 export function related(
-  post: PublishedPost,
+  post: Pick<PublishedPost, "slug" | "tags" | "category">,
   posts: readonly PublishedPost[],
 ): readonly PublishedPost[] {
   const shared = (p: PublishedPost) => p.tags.filter((t) => post.tags.includes(t)).length;
   return posts
-    .filter((p) => p !== post && (p.category === post.category || shared(p) > 0))
+    .filter((p) => p.slug !== post.slug && (p.category === post.category || shared(p) > 0))
     .sort(
       (a, b) =>
         Number(b.category === post.category) - Number(a.category === post.category) ||

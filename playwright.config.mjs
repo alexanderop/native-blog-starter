@@ -39,6 +39,26 @@ export default defineConfig({
     ])
     .concat([
       {
+        name: "chromium-components",
+        testMatch: "**/components.spec.mjs",
+        use: { ...devices["Desktop Chrome"], baseURL: "http://127.0.0.1:5272/people/alex/" },
+      },
+      {
+        name: "firefox-smoke",
+        testMatch: ["**/smoke.spec.mjs", "**/components.spec.mjs"],
+        use: { ...devices["Desktop Firefox"], baseURL: "http://127.0.0.1:5272/people/alex/" },
+      },
+      {
+        name: "webkit-smoke",
+        testMatch: ["**/smoke.spec.mjs", "**/components.spec.mjs"],
+        use: { ...devices["Desktop Safari"], baseURL: "http://127.0.0.1:5271/" },
+      },
+      {
+        name: "webkit-mobile-smoke",
+        testMatch: ["**/smoke.spec.mjs", "**/components.spec.mjs"],
+        use: { ...devices["iPhone 13"], baseURL: "http://127.0.0.1:5272/people/alex/" },
+      },
+      {
         name: "demo-desktop",
         testMatch: "**/demo.spec.mjs",
         use: {

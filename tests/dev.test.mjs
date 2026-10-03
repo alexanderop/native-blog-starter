@@ -115,3 +115,63 @@ test("new-post creates a private draft and refuses overwrite", async (t) => {
   assert.notEqual(run().status, 0);
   assert.equal(await readFile(path, "utf8"), first);
 });
+
+test("draft development serves and rebuilds only its isolated preview", async (t) => {
+  const f = await fixture({ count: 1, base: "/journal/" });
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  for (const dir of ["src", "scripts"])
+    await cp(resolve(projectRoot, dir), resolve(f.root, dir), { recursive: true });
+  const production = spawnSync(process.execPath, ["scripts/build.ts"], {
+    cwd: f.root,
+    encoding: "utf8",
+  });
+  assert.equal(production.status, 0, production.stderr);
+  const before = await readFile(resolve(f.root, ".preview/build.json"), "utf8");
+  const child = spawn(process.execPath, ["scripts/dev.ts", "--drafts"], {
+    cwd: f.root,
+    env: { PATH: process.env.PATH, PORT: "0" },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  let log = "";
+  child.stdout.on("data", (b) => {
+    log += b;
+  });
+  child.stderr.on("data", (b) => {
+    log += b;
+  });
+  t.after(async () => {
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill();
+      await new Promise((ok) => child.once("exit", ok));
+    }
+  });
+  await eventually(() => log.includes("Watching."));
+  const origin = log.match(/Preview: (http:\/\/127.0.0.1:\d+)/)[1];
+  const response = await fetch(origin + "/journal/drafts/");
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow");
+  assert.match(await response.text(), /PRIVATE_TITLE_SENTINEL/);
+  const post = resolve(f.root, "content/blog/secret.md");
+  await writeFile(post, (await readFile(post, "utf8")) + "\n\nDraft revision visible.");
+  await eventually(async () =>
+    (await (await fetch(origin + "/journal/blog/secret/")).text()).includes(
+      "Draft revision visible.",
+    ),
+  );
+  await writeFile(
+    resolve(f.root, "site.config.mjs"),
+    `export default ${JSON.stringify({ ...f.config, basePath: "/new/" })}`,
+  );
+  await eventually(async () => {
+    try {
+      return (await fetch(origin + "/new/drafts/")).status === 200;
+    } catch {
+      return false;
+    }
+  });
+  assert.equal((await fetch(origin + "/journal/drafts/")).status, 404);
+  assert.equal(await readFile(resolve(f.root, ".preview/build.json"), "utf8"), before);
+  await assert.rejects(readFile(resolve(f.root, "dist/blog/secret/index.html")), {
+    code: "ENOENT",
+  });
+});

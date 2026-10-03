@@ -88,18 +88,20 @@ export const PageMetadataSchema = v.strictObject({
   title: metadataText,
   description: metadataText,
 });
+const CalendarDateSchema = v.pipe(
+  v.string(),
+  v.check(
+    (date) =>
+      /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+      Number.isFinite(Date.parse(date)) &&
+      new Date(date).toISOString().slice(0, 10) === date,
+    "Invalid date",
+  ),
+);
 export const PostMetadataSchema = v.strictObject({
   ...PageMetadataSchema.entries,
-  date: v.pipe(
-    v.string(),
-    v.check(
-      (date) =>
-        /^\d{4}-\d{2}-\d{2}$/.test(date) &&
-        Number.isFinite(Date.parse(date)) &&
-        new Date(date).toISOString().slice(0, 10) === date,
-      "Invalid date",
-    ),
-  ),
+  date: CalendarDateSchema,
+  updated: v.optional(CalendarDateSchema),
   category: metadataText,
   author: v.string(),
   tags: v.pipe(v.array(v.string()), v.readonly()),

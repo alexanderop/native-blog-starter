@@ -184,6 +184,9 @@ th {
 .skip-link:focus {
   top: var(--space-2);
 }
+site-finder {
+  display: block;
+}
 .finder-panel {
   width: min(680px, calc(100% - 32px));
   max-height: 80dvh;
@@ -211,7 +214,7 @@ dialog::backdrop {
   font-size: 12px;
   color: var(--muted);
 }
-#finder-input {
+.finder-panel input[role="combobox"] {
   width: 100%;
   border: 1px solid var(--line);
   padding: var(--space-2);
@@ -252,4 +255,30 @@ dialog::backdrop {
   .article-neighbors {
     flex-direction: column;
   }
+}
+
+/* Build-time highlighting; unknown token kinds inherit the readable code color. */
+.hljs-keyword,
+.hljs-literal,
+.hljs-selector-tag,
+.hljs-name,
+.hljs-built_in {
+  color: var(--syntax-keyword, var(--accent));
+}
+.hljs-string,
+.hljs-attr,
+.hljs-regexp {
+  color: var(--syntax-string, var(--body));
+}
+.hljs-comment,
+.hljs-meta {
+  color: var(--syntax-comment, var(--muted));
+}
+.draft-preview-banner {
+  padding: var(--space-2) var(--gutter);
+  background: var(--raised);
+  border-bottom: 1px solid var(--line);
+}
+.draft-preview-banner a {
+  text-decoration: underline;
 }

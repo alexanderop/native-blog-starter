@@ -75,7 +75,7 @@ test("generated draft bodies never reach rendering or any endpoint", async (t) =
   fc.assert(
     fc.property(fc.string({ maxLength: 100 }), (body) => {
       const source =
-        original.source.replace("---\n\n", "draft: true\n---\n\n").split("\n\n")[0] +
+        original.source.replace("draft: false", "draft: true").split("\n\n")[0] +
         "\n\n```\nPRIVATE_GENERATED_SENTINEL" +
         body;
       const draft = { ...original, slug: "generated-draft", file: "generated-draft.md", source };

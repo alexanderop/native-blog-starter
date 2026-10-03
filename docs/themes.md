@@ -39,6 +39,8 @@ Shared semantic HTML, search, table of contents, feeds, and URL handling stay in
 
 The generator publishes the selected files at `assets/tokens.css` and `assets/theme.css`. The shared base stylesheet imports the tokens; the layout links `theme.css` after the base stylesheet so layout overrides win. Both stylesheet URLs include the configured deployment prefix. Reserved theme output paths cannot be overwritten by files in `public/assets`.
 
+Build-time code spans use `--syntax-keyword`, `--syntax-string`, and `--syntax-comment`; define these in `tokens.css` for each color mode. Shared styles fall back to existing semantic colors for older custom themes.
+
 Keep literal colors in `tokens.css`. Preserve all existing semantic token names. Define the light palette on `:root`, the explicit dark palette on `:root[data-theme="dark"]`, and system dark colors inside `prefers-color-scheme` for roots without an explicit light preference. `data-design-theme` identifies the build-selected theme; `data-theme` belongs to reader color preference.
 
 Keep custom fonts and images under `public/`. CSS URLs resolve from the emitted `assets/` directory. For example, `url("../fonts/my-font.woff2")` refers to `public/fonts/my-font.woff2`. Keep asset license files. There is no theme JavaScript runtime, external stylesheet service, or framework dependency in the publication.

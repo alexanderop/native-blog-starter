@@ -38,3 +38,23 @@ The build requires installed tooling dependencies, including Valibot. Only stati
 ## Local themes
 
 Configuration selects a safe theme slug, defaulting to `editorial`. The shell validates that selection before reading the two CSS files under `themes/<slug>`. The core receives a typed theme snapshot, checks its identity, and emits its token and layout files. Inactive themes are not read or published. Shared templates retain the interaction, content, and accessibility contracts. See [themes](themes.md).
+
+## Draft previews and build-time rendering
+
+`prepareDraftPreview` starts from the validated publication, renders drafts into additional local pages, and validates the combined file map. Drafts never enter `Publication.posts`; the article template accepts either state explicitly. Draft previews use `.preview/drafts/` and a separate manifest. The shell rejects attempts to direct a draft build into `dist/`, and rejects a symlinked preview parent. Ordinary builds cannot target the draft directory.
+
+The core uses image-size's byte-only API, with Valibot validating measured dimensions. Filesystem image APIs remain forbidden. Highlight.js runs with an isolated instance and an explicit small language registry; unknown languages and large code blocks stay plain text. The import policy permits only these specific package entry points. Both dependencies are pinned contributor dependencies and are absent from browser assets.
+
+## Light-DOM Web Components
+
+The generator emits complete HTML inside `<site-finder>` and `<copy-actions>`. Deferred native modules upgrade that markup in place; there is no client-side template rendering, Shadow DOM, framework, or package runtime. Articles, native contents links, and Markdown downloads work before upgrade and without JavaScript. Enhancement buttons start with `hidden` and are revealed only when their component connects successfully.
+
+`public/assets/site-finder.js` owns the native dialog, search state, scoped result rendering, retry behavior, and focus restoration. The host's `data-search` contains the generated base-aware index URL. The header button targets the host ID with `data-finder` and the native dialog ID with `aria-controls`. A registry installs one shared set of document trigger/shortcut listeners while connected Finders exist, and removes it when the last Finder disconnects. Search responses are checked for valid fields and same-origin destinations under the configured base before rendering.
+
+`public/assets/copy-actions.js` owns each article's copy buttons and status. It uses the existing download URL, leaves the native download link intact, and handles clipboard/fetch failure locally. Each instance has independent state. A new copy action cancels the previous fetch; disconnecting aborts pending work and prevents stale status updates.
+
+Both components use AbortController to release listeners and fetches on disconnect and can reconnect without duplicate handlers. Existing child elements are read in `connectedCallback`, after the deferred module loads. `app.js` imports the two modules and retains the reading indicator. `theme.js` still applies the color preference in the head before first paint.
+
+These choices follow the [MDN lifecycle guidance](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements) and [platform semantics](https://html.spec.whatwg.org/multipage/custom-elements.html). Real buttons, inputs, links, and dialogs retain their native semantics; the custom wrappers add behavior. Light DOM keeps theme selectors and labels/ARIA references in the same tree. Customized built-ins (`is=`) are avoided because Safari does not support them. [Declarative Shadow DOM](https://web.dev/articles/declarative-shadow-dom) can render shadow content without JavaScript, but this starter does not need that extra styling boundary.
+
+Component browser regressions cover failed module loading, multiple copy instances, reconnecting without duplicate writes, disconnecting during a search request, retrying invalid search responses, and working shortcuts after reconnection. Existing journeys cover focus, keyboard navigation, no-JavaScript reading, every theme, and nested hosting. No new dependencies are required.

@@ -24,6 +24,12 @@ importers:
       fast-check:
         specifier: 4.10.2
         version: 4.10.2
+      highlight.js:
+        specifier: 11.12.0
+        version: 11.12.0
+      image-size:
+        specifier: 2.0.4
+        version: 2.0.4
       oxc-parser:
         specifier: 0.152.0
         version: 0.152.0
@@ -1009,6 +1015,15 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
+  highlight.js@11.12.0:
+    resolution: {integrity: sha512-nbfWpyRMcMrPMmDwJB+dhX/eiaPKtc2RB+0QZskqJ3WjRA/FDS0e9hZrx8EC/lbEv8gXy98FcDbNa/dspAaJMg==}
+    engines: {node: '>=12.0.0'}
+
+  image-size@2.0.4:
+    resolution: {integrity: sha512-QRUkFFsRV/6fuESxb9Vkq+a0LkSrgKXuc2NEqfikiXxxN/G3tjWt5EVUlMaImRBZRZK/jRBEbYvpPYZL8t08Zw==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -1867,6 +1882,10 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
+
+  highlight.js@11.12.0: {}
+
+  image-size@2.0.4: {}
 
   js-tokens@4.0.0: {}
 

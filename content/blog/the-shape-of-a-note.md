@@ -2,6 +2,7 @@
 title: The shape of a note
 description: A working example of headings, lists, links, code, tables, and a little breathing room.
 date: 2026-10-02
+draft: false
 category: Craft
 tags: [writing, craft]
 ---

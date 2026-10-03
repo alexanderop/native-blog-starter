@@ -43,3 +43,13 @@ For broader local exploration, run additional seeds. CI keeps the default seed r
 The policy allows deterministic `node:path` helpers in the core. It rejects filesystem and network imports, shell access, and common ambient effects. It is an architectural check, not a sandbox for hostile source code. Valibot schemas stay pure and do not perform I/O.
 
 Theme integration tests build every bundled theme at root and nested paths. They cover custom theme folders, unused broken themes, missing CSS, traversal, reserved asset collisions, and symlinks. Development-process tests exercise stylesheet edits and changing the configured theme. Browser journeys run against every bundled theme on desktop, mobile, and nested hosting.
+
+## Authoring improvements
+
+`tests/improvements.test.mjs` exercises explicit publication intent, update-date chronology and exports, image sizing from bytes, code escaping and plain-text fallbacks, and draft preview isolation at root and nested paths. Filesystem assertions compare the production artifact and manifest before and after preview builds, including failed edits and rejected output destinations.
+
+Install all engines with `pnpm exec playwright install chromium firefox webkit`. The existing Chromium matrix covers every theme; Firefox, desktop WebKit, and mobile WebKit add focused journeys through navigation, Finder, theme persistence, actual downloads, and no-JavaScript reading. These run inside `pnpm verify` and CI. macOS visual comparisons remain Chromium-based and separate from engine behavior coverage.
+
+## Component lifecycle coverage
+
+`tests/e2e/components.spec.mjs` exercises the light-DOM components through browser behavior: static fallback when the module fails, independent clipboard status for two instances, disconnect/reconnect without duplicate writes, request cancellation, shortcut recovery, and rejection/retry of unsafe search data. Chromium runs these at a nested base; desktop/mobile WebKit and Firefox include them alongside the smoke journeys. Clipboard writes are intercepted in these tests so they do not alter the machine clipboard. The existing all-theme journeys and visual comparisons guard the original reading experience.

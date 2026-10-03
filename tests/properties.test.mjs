@@ -110,7 +110,7 @@ const config = {
 function exportedMetadata(values) {
   const authored = `---\n${Object.entries(values)
     .map(([key, value]) => `${key}: "${value}"`)
-    .join("\n")}\ndate: 2026-10-03\ntags: [one, two]\n---\n\nA literal body.\n`;
+    .join("\n")}\ndate: 2026-10-03\ntags: [one, two]\ndraft: false\n---\n\nA literal body.\n`;
   const data = parseContent(authored, "authored.md", "Default author");
   assert.deepEqual(Object.fromEntries(Object.keys(values).map((key) => [key, data[key]])), {
     ...values,

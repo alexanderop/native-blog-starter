@@ -2,7 +2,7 @@
 
 A small editorial blog you can own. Write Markdown, configure your identity, and publish static HTML. Native scrolling, a spatial editorial grid, a sticky reading guide, local fonts, and light/dark themes are included.
 
-The published site requires no packages. Build tooling uses TypeScript and Valibot. Vite+, Oxc, Playwright, axe, and fast-check provide contributor checks. There is no framework, hydration, bundler, Markdown package, analytics, or package CDN in the publication.
+The published site requires no packages. Build tooling uses TypeScript, Valibot, image-size, and Highlight.js. Vite+, Oxc, Playwright, axe, and fast-check provide contributor checks. There is no framework, hydration, bundler, Markdown package, analytics, or package CDN in the publication.
 
 ## Start
 
@@ -13,6 +13,8 @@ pnpm install
 pnpm dev
 # http://127.0.0.1:5260
 ```
+
+Run `pnpm dev:drafts` to inspect unpublished posts at `/drafts/`. It serves a separate `.preview/drafts/` artifact and leaves `dist/` untouched.
 
 The watcher rebuilds after changes. Refresh your browser yourself. A failed edit prints a diagnostic and retains the last successful publication. `PORT=5300 pnpm dev` selects an explicit port. Without it, development startup tries up to ten ports.
 
@@ -50,12 +52,12 @@ pnpm preview
 
 Deploy only `dist/`. The preview server is a loopback-only development tool. A production static-file service can serve the same files on a Node host.
 
-Posts, archives, category pages, About, contents links, and downloads work without JavaScript. Finder, theme controls, and copy buttons progressively enhance the HTML. Finder supports `/`, Command/Ctrl+K, arrow keys, Enter, Escape, and retry after a fetch failure.
+Posts, archives, category pages, About, contents links, and downloads work without JavaScript. Finder and copy actions use light-DOM Web Components that upgrade generated HTML in place. Their native download links remain usable without JavaScript; interactive buttons appear after upgrade. Theme controls progressively enhance the initial color preference. Finder supports `/`, Command/Ctrl+K, arrow keys, Enter, Escape, and retry after a fetch failure.
 
 ## Verify
 
 ```sh
-pnpm exec playwright install chromium
+pnpm exec playwright install chromium firefox webkit
 pnpm verify
 pnpm test:visual # reviewed macOS references
 ```

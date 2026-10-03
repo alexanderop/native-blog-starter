@@ -6,6 +6,12 @@ const types: Readonly<Record<string, string>> = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+  ".avif": "image/avif",
   ".svg": "image/svg+xml",
   ".woff2": "font/woff2",
   ".md": "text/markdown; charset=utf-8",
@@ -14,6 +20,7 @@ const types: Readonly<Record<string, string>> = {
   ".txt": "text/plain; charset=utf-8",
 };
 export interface ServeOptions {
+  readonly noindex?: boolean;
   readonly port?: number;
   readonly root?: string;
   readonly base?: string;
@@ -24,9 +31,11 @@ export async function serve({
   root = resolve(projectRoot, "dist"),
   base = "/",
   attempts = 1,
+  noindex = false,
 }: ServeOptions = {}): Promise<import("node:http").Server> {
   root = await realpath(root);
   const server = createServer(async (req, res) => {
+    if (noindex) res.setHeader("X-Robots-Tag", "noindex, nofollow");
     try {
       if (!["GET", "HEAD"].includes(req.method ?? "")) {
         res.writeHead(405, { Allow: "GET, HEAD" });

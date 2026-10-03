@@ -2,6 +2,7 @@
 title: A place for your words
 description: Start with an open file, a small idea, and room to make it your own.
 date: 2026-10-03
+draft: false
 category: Notes
 tags: [writing, craft]
 featured: true

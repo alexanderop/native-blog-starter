@@ -19,6 +19,9 @@
   --space-4: 40px;
   --space-5: 64px;
   --radius: 2px;
+  --syntax-keyword: var(--accent);
+  --syntax-string: #356039;
+  --syntax-comment: var(--muted);
   color-scheme: light;
 }
 :root[data-theme="dark"] {
@@ -29,6 +32,7 @@
   --muted: #aaa79e;
   --line: #f5f4ef30;
   --accent: #df8c6c;
+  --syntax-string: #afd2a9;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
@@ -40,6 +44,7 @@
     --muted: #aaa79e;
     --line: #f5f4ef30;
     --accent: #df8c6c;
+    --syntax-string: #afd2a9;
     color-scheme: dark;
   }
 }

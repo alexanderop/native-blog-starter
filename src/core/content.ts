@@ -75,7 +75,7 @@ export function parseContent(
         ...data,
         author: data.author ?? author,
         tags: data.tags ?? [],
-        draft: data.draft ?? false,
+        draft: data.draft,
         featured: data.featured ?? false,
       };
   const parsed = page ? v.safeParse(PageMetadataSchema, raw) : v.safeParse(PostMetadataSchema, raw);
@@ -87,12 +87,18 @@ export function parseContent(
       data[key] === undefined ? `Missing ${key}` : issue.message,
     );
   }
+  if (!page && data.updated !== undefined && String(data.updated) < String(data.date))
+    fail(
+      lines.findIndex((line) => line.startsWith("updated:")) + 1,
+      "updated must not precede date",
+    );
   return { ...parsed.output, body: lines.slice(end + 1).join("\n") };
 }
 
 export function collect(
   sources: readonly ContentSource[],
   config: Config,
+  assets?: ReadonlyMap<string, Uint8Array>,
 ): { readonly posts: readonly PublishedPost[]; readonly pages: readonly Page[] } {
   const posts: PublishedPost[] = [],
     pages: Page[] = [];
@@ -100,7 +106,7 @@ export function collect(
     try {
       if (input.kind === "page") {
         const data = parseContent(input.source, input.file, config.author, true);
-        const rendered = markdown(data.body, config.basePath);
+        const rendered = markdown(data.body, config.basePath, assets);
         pages.push({
           ...data,
           ...rendered,
@@ -112,7 +118,7 @@ export function collect(
       } else {
         const data = parseContent(input.source, input.file, config.author);
         if (data.draft) continue;
-        const rendered = markdown(data.body, config.basePath);
+        const rendered = markdown(data.body, config.basePath, assets);
         posts.push({
           ...data,
           ...rendered,

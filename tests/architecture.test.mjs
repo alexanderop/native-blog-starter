@@ -10,6 +10,8 @@ test("core rejects effectful imports, escapes and ambient effects", () => {
   const file = resolve(root, "src/core/nested/content.ts");
   for (const source of [
     'import "node:fs";',
+    'import "image-size/fromFile";',
+    'import "highlight.js";',
     'export { readFile } from "node:fs/promises";',
     'const module = import("node:http");',
     'import { load } from "../../shell/read-project.ts";',

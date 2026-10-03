@@ -4,14 +4,25 @@ import { createHash } from "node:crypto";
 import type { ValidatedBuildPlan } from "../core/types.ts";
 import type { BuildManifest } from "./manifest.ts";
 export interface CommitOptions {
+  readonly draftPreview?: boolean;
   readonly root: string;
   readonly out: string;
   readonly beforePromote?: (stage: string) => Promise<void>;
 }
 const inside = (path: string, parent: string): boolean =>
   path === parent || path.startsWith(parent + sep);
-export async function checkOutput(root: string, out: string): Promise<void> {
-  if (inside(root, out) || (inside(out, root) && out !== resolve(root, "dist")))
+export async function checkOutput(root: string, out: string, draftPreview = false): Promise<void> {
+  if (draftPreview) {
+    if (out !== resolve(root, ".preview/drafts"))
+      throw Error("Draft preview output must be .preview/drafts");
+    const preview = await lstat(resolve(root, ".preview")).catch((error: unknown) => {
+      if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
+      return undefined;
+    });
+    if (preview && (preview.isSymbolicLink() || !preview.isDirectory()))
+      throw Error("Preview directory must be a real directory");
+  }
+  if (!draftPreview && (inside(root, out) || (inside(out, root) && out !== resolve(root, "dist"))))
     throw Error("Output overlaps source tree");
   const existing = await lstat(out).catch((error: unknown) => {
     if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
@@ -22,9 +33,9 @@ export async function checkOutput(root: string, out: string): Promise<void> {
 }
 export async function commitBuild(
   plan: ValidatedBuildPlan,
-  { root, out, beforePromote }: CommitOptions,
+  { root, out, beforePromote, draftPreview }: CommitOptions,
 ): Promise<BuildManifest> {
-  await checkOutput(root, out);
+  await checkOutput(root, out, draftPreview);
   const files = plan.files;
   const digest = createHash("sha256");
   for (const [path, bytes] of [...files].sort(([a], [b]) => a.localeCompare(b)))
@@ -40,7 +51,7 @@ export async function commitBuild(
   const stage = await mkdtemp(out + ".stage-");
   const backup = stage + ".previous";
   const metaDir = resolve(root, ".preview");
-  const manifest = resolve(metaDir, "build.json");
+  const manifest = resolve(metaDir, draftPreview ? "drafts.json" : "build.json");
   const metaTemp = resolve(metaDir, `build-${process.pid}-${Date.now()}.json`);
   let moved = false;
   try {

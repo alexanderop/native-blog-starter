@@ -1,3 +1,5 @@
+import { highlight } from "./highlight.ts";
+import { imageDimensions } from "./images.ts";
 import type { Heading, RenderedMarkdown } from "./types.ts";
 import { escape as e, publicUrl, slugify } from "./urls.ts";
 export function inline(source: string, base: string): string {
@@ -38,10 +40,21 @@ export function inline(source: string, base: string): string {
   }
   return html;
 }
-export function markdown(source: string, base: string = "/"): RenderedMarkdown {
+export function markdown(
+  source: string,
+  base: string = "/",
+  assets?: ReadonlyMap<string, Uint8Array>,
+): RenderedMarkdown {
   const lines = source.split(/\r?\n/),
     html = [],
-    used = new Set(["main", "finder-heading", "finder-input", "finder-results"]);
+    used = new Set([
+      "journal-finder",
+      "finder-dialog",
+      "main",
+      "finder-heading",
+      "finder-input",
+      "finder-results",
+    ]);
   const headings: Heading[] = [];
   const cells = (value: string) =>
     value
@@ -73,7 +86,7 @@ export function markdown(source: string, base: string = "/"): RenderedMarkdown {
       if (i === lines.length) throw Error("Unclosed code fence");
       i++;
       html.push(
-        `<pre tabindex="0" aria-label="${e(label || "Code")} example"><code>${e(code.join("\n"))}</code></pre>`,
+        `<pre tabindex="0" aria-label="${e(label || "Code")} example"><code>${highlight(code.join("\n"), label)}</code></pre>`,
       );
       continue;
     }
@@ -91,11 +104,15 @@ export function markdown(source: string, base: string = "/"): RenderedMarkdown {
       i++;
       continue;
     }
-    const image = line.match(/^!\[([^\]]*)\]\(([^\s)]+)\)$/);
+    const image = line.match(
+      /^!\[([^\]]*)\]\(([^\s)]+)\)(?:\{width=([1-9]\d*) height=([1-9]\d*)\})?$/,
+    );
+    if (line.startsWith("![") && !image) throw Error("Invalid image syntax or dimensions");
     if (image) {
       if (!image[2].startsWith("/media/")) throw Error("Images must be in /media/");
+      const dimensions = imageDimensions(image[2], assets, image[3], image[4]);
       html.push(
-        `<figure><img src="${e(publicUrl(base, image[2]))}" alt="${e(image[1])}" loading="lazy" decoding="async"></figure>`,
+        `<figure><img src="${e(publicUrl(base, image[2]))}" alt="${e(image[1])}"${dimensions ? ` width="${dimensions.width}" height="${dimensions.height}"` : ""} loading="lazy" decoding="async"></figure>`,
       );
       i++;
       continue;
@@ -173,10 +190,14 @@ export function markdown(source: string, base: string = "/"): RenderedMarkdown {
   }
   const output = html.join("\n");
   const text = output
+    .replace(/<\/?span\b[^>]*>/g, "")
     .replace(/<[^>]*>/g, " ")
     .replace(
-      /&(?:amp|lt|gt|quot|#39);/g,
-      (s) => ({ "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'" })[s] ?? s,
+      /&(?:amp|lt|gt|quot|#39|#x27);/g,
+      (s) =>
+        ({ "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'", "&#x27;": "'" })[
+          s
+        ] ?? s,
     )
     .replace(/\s+/g, " ")
     .trim();

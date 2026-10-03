@@ -60,7 +60,7 @@ test("unsafe URLs and unsupported syntax fail rather than execute", () => {
 });
 test("frontmatter diagnostics, default author and calendar validation", () => {
   const source =
-    "---\ntitle: A\ndescription: B\ndate: 2026-10-03\ncategory: Notes\ntags: [one, one, two]\n---\nHello";
+    "---\ntitle: A\ndescription: B\ndate: 2026-10-03\ncategory: Notes\ntags: [one, one, two]\ndraft: false\n---\nHello";
   const parsed = parseContent(source, "post.md", "Default");
   assert.equal(parsed.author, "Default");
   assert.deepEqual(parsed.tags, ["one", "two"]);

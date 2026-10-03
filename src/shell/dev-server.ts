@@ -4,21 +4,35 @@ import { readManifest } from "./manifest.ts";
 import { basename, resolve } from "node:path";
 import { projectRoot } from "./project-root.ts";
 import { serve } from "./serve.ts";
-export async function startDevelopment(): Promise<void> {
+export async function startDevelopment(drafts = false): Promise<void> {
+  const manifestPath = resolve(
+    projectRoot,
+    drafts ? ".preview/drafts.json" : ".preview/build.json",
+  );
+  const output = resolve(projectRoot, drafts ? ".preview/drafts" : "dist");
   async function rebuild(): Promise<boolean> {
     return new Promise<boolean>((resolveDone) => {
-      const child = spawn(process.execPath, ["scripts/build.ts"], {
-        cwd: projectRoot,
-        stdio: "inherit",
-      });
+      const child = spawn(
+        process.execPath,
+        [drafts ? "scripts/build-drafts.ts" : "scripts/build.ts"],
+        {
+          cwd: projectRoot,
+          stdio: "inherit",
+        },
+      );
       child.once("error", () => resolveDone(false));
       child.once("exit", (code) => resolveDone(code === 0));
     });
   }
   if (!(await rebuild()))
     throw Error("Initial build failed. Fix the content before starting the preview.");
-  let manifest = await readManifest(resolve(projectRoot, ".preview/build.json"));
-  let server = await serve({ base: manifest.base, attempts: process.env.PORT ? 1 : 10 });
+  let manifest = await readManifest(manifestPath);
+  let server = await serve({
+    root: output,
+    noindex: drafts,
+    base: manifest.base,
+    attempts: process.env.PORT ? 1 : 10,
+  });
   let busy = false,
     pending = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -30,13 +44,15 @@ export async function startDevelopment(): Promise<void> {
       while (pending) {
         pending = false;
         if (!(await rebuild())) continue;
-        const next = await readManifest(resolve(projectRoot, ".preview/build.json"));
+        const next = await readManifest(manifestPath);
         if (next.base === manifest.base) continue;
         const address = server.address();
         await new Promise<void>((ok, fail) =>
           server.close((error) => (error ? fail(error) : ok())),
         );
         server = await serve({
+          root: output,
+          noindex: drafts,
           base: next.base,
           port: typeof address === "object" && address ? address.port : undefined,
         });
@@ -59,5 +75,6 @@ export async function startDevelopment(): Promise<void> {
   watch(projectRoot, { recursive: false }, (_event, filename) => {
     if (filename == null || basename(String(filename)) === "site.config.mjs") changed();
   });
+  if (drafts) console.log(`Local drafts: ${manifest.base}drafts/ (never upload .preview/)`);
   console.log("Watching. Refresh the browser after a successful rebuild.");
 }
